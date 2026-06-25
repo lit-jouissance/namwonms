@@ -1,0 +1,2183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>시험 마라톤 🏃</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
+  :root {
+    --track: #1a1a2e;
+    --lane: #16213e;
+    --accent: #e94560;
+    --gold: #f5a623;
+    --green: #0f9b58;
+    --text: #eaeaea;
+    --muted: #7a7a9a;
+    --card: #0f3460;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--track);
+    color: var(--text);
+    min-height: 100vh;
+    max-width: 430px;
+    margin: 0 auto;
+    padding-bottom: 80px;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #0f3460, #16213e);
+    padding: 20px 20px 16px;
+    border-bottom: 3px solid var(--accent);
+  }
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .race-title {
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .date-badge {
+    background: var(--accent);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+  }
+  .main-title {
+    font-size: 22px;
+    font-weight: 900;
+    color: white;
+    line-height: 1.2;
+  }
+  .main-title span { color: var(--gold); }
+
+  /* COUNTDOWN */
+  .countdown-bar {
+    background: var(--lane);
+    margin: 16px 16px 0;
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+  .countdown-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .countdown-nums {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .cd-block {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 8px 12px;
+    text-align: center;
+    flex: 1;
+    border: 1px solid rgba(233,69,96,0.3);
+  }
+  .cd-num {
+    font-size: 26px;
+    font-weight: 900;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .cd-unit {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .cd-sep { font-size: 20px; color: var(--muted); font-weight: 900; }
+
+  /* RACE TRACK */
+  .section-title {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    padding: 16px 16px 8px;
+    text-transform: uppercase;
+  }
+
+  .race-track-wrap {
+    margin: 0 16px;
+    background: var(--lane);
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .track-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .km-info {
+    font-size: 13px;
+    color: var(--gold);
+    font-weight: 700;
+  }
+  .pct-info {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .track-bg {
+    height: 36px;
+    background: #0d1b2a;
+    border-radius: 18px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .track-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green), var(--gold));
+    border-radius: 18px;
+    transition: width 1s ease;
+    position: relative;
+  }
+  .track-runner {
+    position: absolute;
+    right: -2px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 22px;
+    filter: drop-shadow(0 0 6px var(--gold));
+  }
+
+  /* Lane markers */
+  .lane-markers {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    padding: 0 2px;
+  }
+  .lane-m {
+    font-size: 9px;
+    color: var(--muted);
+  }
+
+  /* WEEK CARDS */
+  .week-row {
+    display: flex;
+    gap: 10px;
+    margin: 0 16px;
+  }
+  .week-card {
+    flex: 1;
+    background: var(--lane);
+    border-radius: 14px;
+    padding: 14px 12px;
+    border: 1px solid rgba(255,255,255,0.07);
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .week-card.active {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, #1e2a4a, #0f3460);
+  }
+  .week-card:active { transform: scale(0.97); }
+  .week-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .week-card.active .week-badge { color: var(--accent); }
+  .week-card:not(.active) .week-badge { color: var(--muted); }
+  .week-name {
+    font-size: 14px;
+    font-weight: 900;
+    color: white;
+    margin-bottom: 4px;
+  }
+  .week-km {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .week-glow {
+    position: absolute;
+    top: -20px; right: -20px;
+    width: 60px; height: 60px;
+    background: var(--accent);
+    border-radius: 50%;
+    opacity: 0.06;
+  }
+
+  /* DAILY MISSIONS */
+  .missions-wrap {
+    margin: 0 16px;
+  }
+  .mission-day {
+    background: var(--lane);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+  .mission-day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .day-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+  }
+  .day-status {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 700;
+  }
+  .day-status.done { background: rgba(15,155,88,0.2); color: var(--green); }
+  .day-status.today { background: rgba(233,69,96,0.2); color: var(--accent); }
+  .day-status.upcoming { background: rgba(122,122,154,0.2); color: var(--muted); }
+
+  .task-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    cursor: pointer;
+  }
+  .task-item:last-child { border-bottom: none; }
+  .task-check {
+    width: 20px; height: 20px;
+    border-radius: 6px;
+    border: 2px solid var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .task-check.checked {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .task-check.checked::after { content: '✓'; font-size: 11px; color: white; font-weight: 900; }
+  .task-text {
+    font-size: 13px;
+    color: var(--text);
+    flex: 1;
+    line-height: 1.4;
+  }
+  .task-text.done-text {
+    text-decoration: line-through;
+    color: var(--muted);
+  }
+  .task-subject {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .subj-math { background: rgba(245,166,35,0.2); color: var(--gold); }
+  .subj-kor { background: rgba(233,69,96,0.2); color: var(--accent); }
+  .subj-eng { background: rgba(15,155,88,0.2); color: #2ecc71; }
+  .subj-sci { background: rgba(52,152,219,0.2); color: #3498db; }
+  .subj-tech { background: rgba(26,188,156,0.2); color: #1abc9c; }
+  .day-academy { font-size: 10px; color: var(--green); font-weight: 700; margin-left: 6px; }
+
+  /* MOTIVATION CARD */
+  .motive-card {
+    margin: 0 16px;
+    background: linear-gradient(135deg, var(--card), #1a0a2e);
+    border-radius: 16px;
+    padding: 18px;
+    border: 1px solid rgba(233,69,96,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .motive-quote-mark {
+    font-size: 60px;
+    color: var(--accent);
+    opacity: 0.15;
+    position: absolute;
+    top: -10px; left: 10px;
+    line-height: 1;
+    font-family: serif;
+  }
+  .motive-text {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.7;
+    color: white;
+    position: relative;
+  }
+  .motive-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  /* STATS ROW */
+  .stats-row {
+    display: flex;
+    gap: 10px;
+    margin: 0 16px;
+  }
+  .stat-card {
+    flex: 1;
+    background: var(--lane);
+    border-radius: 14px;
+    padding: 14px 12px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+  .stat-num {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* TAB NAV */
+  .tab-nav {
+    position: fixed;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 430px;
+    background: rgba(22, 33, 62, 0.97);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    padding: 8px 0 16px;
+  }
+  .tab-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 10px;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    padding: 6px 0;
+    transition: color 0.2s;
+  }
+  .tab-btn.active { color: var(--accent); }
+  .tab-icon { font-size: 20px; }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* STRATEGY VIEW */
+  .strategy-card {
+    background: var(--lane);
+    border-radius: 14px;
+    padding: 16px;
+    margin: 0 16px 10px;
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+  .strategy-num {
+    width: 28px; height: 28px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 900;
+    margin-bottom: 10px;
+  }
+  .strategy-title {
+    font-size: 15px;
+    font-weight: 900;
+    color: white;
+    margin-bottom: 6px;
+  }
+  .strategy-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .strategy-desc strong { color: var(--gold); }
+
+  /* ANALOGY TABLE */
+  .analogy-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 6px;
+    margin-top: 10px;
+  }
+  .analogy-table th {
+    font-size: 10px;
+    color: var(--muted);
+    text-align: left;
+    padding: 0 8px 4px;
+    letter-spacing: 1px;
+  }
+  .analogy-table td {
+    background: rgba(255,255,255,0.04);
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  .analogy-table td:first-child {
+    border-radius: 8px 0 0 8px;
+    color: var(--gold);
+    font-weight: 700;
+  }
+  .analogy-table td:last-child {
+    border-radius: 0 8px 8px 0;
+    color: var(--text);
+  }
+  .analogy-arrow {
+    text-align: center;
+    color: var(--muted);
+    background: rgba(255,255,255,0.02) !important;
+    padding: 8px 4px !important;
+  }
+
+  .spacer { height: 12px; }
+
+  /* Pomodoro pill */
+  .pomo-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(233,69,96,0.15);
+    border: 1px solid rgba(233,69,96,0.3);
+    border-radius: 20px;
+    padding: 6px 14px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  /* CONCEPT (개념) VIEW */
+  .concept-subj {
+    margin: 18px 16px 6px;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+  }
+  .concept-card {
+    background: var(--lane);
+    border-radius: 14px;
+    margin: 0 16px 8px;
+    border: 1px solid rgba(255,255,255,0.07);
+    overflow: hidden;
+  }
+  .concept-head {
+    padding: 13px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+  }
+  .concept-head .arrow {
+    color: var(--muted);
+    font-size: 11px;
+    transition: transform 0.2s;
+  }
+  .concept-card.open .concept-head .arrow { transform: rotate(90deg); }
+  .concept-body { display: none; padding: 0 14px 10px; }
+  .concept-card.open .concept-body { display: block; }
+  .concept-item {
+    padding: 9px 0;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .concept-k {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 3px;
+  }
+  .concept-v {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.55;
+  }
+  .concept-note {
+    margin: 6px 16px 14px;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  /* teacher intro */
+  .teacher-intro {
+    margin: 0 16px 8px;
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.55;
+    background: rgba(233,69,96,0.08);
+    border-left: 3px solid var(--accent);
+    padding: 8px 10px;
+    border-radius: 0 8px 8px 0;
+  }
+
+  /* tables & figures inside concept body */
+  .cept-h { font-size: 12px; font-weight: 700; color: #fff; margin: 12px 0 5px; }
+  .cept-table { width: 100%; border-collapse: collapse; margin: 2px 0 6px; font-size: 12px; }
+  .cept-table th {
+    background: rgba(255,255,255,0.07); color: var(--muted);
+    padding: 6px 8px; text-align: left; font-weight: 700;
+    border: 1px solid rgba(255,255,255,0.09);
+  }
+  .cept-table td {
+    padding: 6px 8px; border: 1px solid rgba(255,255,255,0.09);
+    color: var(--text); line-height: 1.45;
+  }
+  .cept-fig { display: flex; justify-content: center; margin: 8px 0 2px; }
+  .cept-fig svg { background: #0d1b2a; border-radius: 10px; }
+  .cept-cap { font-size: 11px; color: var(--muted); text-align: center; margin-bottom: 6px; }
+
+  /* quiz */
+  .quiz-teacher { font-size: 12px; color: var(--gold); line-height: 1.5; margin-bottom: 12px; }
+  .quiz-daily { font-size: 11px; color: var(--muted); margin: -6px 0 12px; }
+  .quiz-q { margin-bottom: 16px; }
+  .quiz-qtext { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 8px; line-height: 1.5; }
+  .quiz-opts { display: flex; flex-direction: column; gap: 6px; }
+  .quiz-opt {
+    text-align: left; background: var(--card);
+    border: 1px solid rgba(255,255,255,0.12); color: var(--text);
+    padding: 9px 12px; border-radius: 10px; font-size: 12px;
+    font-family: inherit; cursor: pointer; transition: background 0.15s;
+  }
+  .quiz-opt.correct { background: rgba(15,155,88,0.25); border-color: var(--green); color: #7CFFB0; font-weight: 700; }
+  .quiz-opt.wrong { background: rgba(233,69,96,0.2); border-color: var(--accent); color: #ff9bb0; }
+  .quiz-explain {
+    display: none; margin-top: 8px; font-size: 12px; color: var(--text);
+    line-height: 1.55; background: rgba(255,255,255,0.04);
+    padding: 8px 10px; border-radius: 8px;
+  }
+  .quiz-score { margin-top: 8px; font-size: 12px; font-weight: 700; color: var(--gold); }
+
+  /* today focus banner */
+  .today-focus {
+    margin: 0 16px 12px;
+    background: linear-gradient(135deg, rgba(245,166,35,0.16), rgba(233,69,96,0.12));
+    border: 1px solid rgba(245,166,35,0.35);
+    border-radius: 14px;
+    padding: 12px 14px;
+  }
+  .tf-h { font-size: 13px; font-weight: 900; color: var(--gold); margin-bottom: 8px; }
+  .tf-exam { font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+  .tf-item { font-size: 12px; color: var(--text); line-height: 1.5; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .tf-item:last-child { margin-bottom: 0; }
+  .tf-body { font-size: 12px; color: var(--text); line-height: 1.5; }
+
+  /* record (기록) view */
+  .rec-summary {
+    margin: 0 16px 14px;
+    display: flex; gap: 8px;
+  }
+  .rec-stat {
+    flex: 1; background: var(--lane); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 12px 8px; text-align: center;
+  }
+  .rec-stat .n { font-size: 20px; font-weight: 900; color: var(--gold); }
+  .rec-stat .l { font-size: 10px; color: var(--muted); margin-top: 3px; }
+  .rec-day {
+    margin: 0 16px 8px; background: var(--lane);
+    border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 11px 13px;
+  }
+  .rec-day.today { border-color: var(--gold); }
+  .rec-day-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .rec-date { font-size: 12px; font-weight: 700; color: #fff; }
+  .rec-mission { font-size: 11px; color: var(--muted); }
+  .rec-quiz { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+  .rec-chip {
+    font-size: 11px; padding: 3px 8px; border-radius: 999px;
+    background: rgba(255,255,255,0.06); color: var(--text);
+  }
+  .rec-empty { font-size: 11px; color: var(--muted); }
+  .rec-note { margin: 12px 16px 8px; font-size: 11px; color: var(--muted); line-height: 1.5; }
+  .rec-reset {
+    display: block; margin: 4px 16px 0; padding: 9px; width: calc(100% - 32px);
+    background: transparent; border: 1px solid rgba(233,69,96,0.4);
+    color: var(--accent); border-radius: 10px; font-size: 12px; font-family: inherit; cursor: pointer;
+  }
+
+  /* firebase sync */
+  .sync-box { margin: 0 16px 14px; background: var(--lane); border: 1px solid rgba(245,166,35,0.25); border-radius: 14px; padding: 12px 14px; }
+  .sync-head { font-size: 13px; font-weight: 800; color: var(--gold); margin-bottom: 6px; }
+  .sync-note { font-size: 11px; color: var(--muted); line-height: 1.55; margin-bottom: 8px; }
+  .sync-note b { color: var(--text); }
+  .sync-form { display: flex; gap: 6px; flex-wrap: wrap; }
+  .sync-in { flex: 1; min-width: 80px; background: var(--card); border: 1px solid rgba(255,255,255,0.12); color: #fff; border-radius: 9px; padding: 8px 10px; font-size: 12px; font-family: inherit; }
+  .sync-btn { background: var(--accent); border: none; color: #fff; border-radius: 9px; padding: 8px 14px; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; }
+  .sync-btn.ghost { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: var(--muted); }
+  .sync-status { font-size: 11px; color: var(--muted); margin-top: 8px; min-height: 14px; }
+
+  /* admin */
+  .adm-enter {
+    display: block; margin: 8px 16px 0; padding: 8px; width: calc(100% - 32px);
+    background: transparent; border: 1px dashed rgba(255,255,255,0.2);
+    color: var(--muted); border-radius: 10px; font-size: 11px; font-family: inherit; cursor: pointer;
+  }
+  .adm-top { display: flex; justify-content: space-between; align-items: center; padding: 18px 16px 6px; }
+  .adm-close { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: var(--muted); border-radius: 8px; padding: 6px 10px; font-size: 12px; font-family: inherit; cursor: pointer; }
+  .adm-student { margin: 0 16px 14px; background: var(--lane); border: 1px solid rgba(245,166,35,0.25); border-radius: 14px; padding: 12px 14px; }
+  .adm-name { font-size: 14px; font-weight: 900; color: #fff; margin-bottom: 8px; }
+  .adm-student .rec-summary { margin: 0 0 10px; }
+  .adm-student .rec-day { margin: 0 0 8px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div class="race-title">🏃 시험 마라톤</div>
+    <div class="date-badge" id="examBadge">D-?</div>
+  </div>
+  <div class="main-title">7월 7-8일 <span>레이스</span><br>완주하자!</div>
+</div>
+
+<!-- VIEW: 레이스 -->
+<div class="view active" id="view-race">
+
+  <!-- COUNTDOWN -->
+  <div class="countdown-bar">
+    <div class="countdown-label">⏱ 시험까지 남은 시간</div>
+    <div class="countdown-nums">
+      <div class="cd-block"><div class="cd-num" id="cdDays">--</div><div class="cd-unit">일</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-block"><div class="cd-num" id="cdHours">--</div><div class="cd-unit">시간</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-block"><div class="cd-num" id="cdMins">--</div><div class="cd-unit">분</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-block"><div class="cd-num" id="cdSecs">--</div><div class="cd-unit">초</div></div>
+    </div>
+  </div>
+
+  <!-- RACE TRACK -->
+  <div class="section-title">📍 레이스 진행 현황</div>
+  <div class="race-track-wrap">
+    <div class="track-header">
+      <div class="km-info" id="kmInfo">-- km 지점</div>
+      <div class="pct-info" id="pctInfo">--% 완료</div>
+    </div>
+    <div class="track-bg">
+      <div class="track-fill" id="trackFill" style="width:0%">
+        <div class="track-runner">🏃</div>
+      </div>
+    </div>
+    <div class="lane-markers">
+      <span class="lane-m">출발<br>6/24</span>
+      <span class="lane-m">중간<br>6/30</span>
+      <span class="lane-m" style="color:var(--gold)">결승 🏁<br>7/7</span>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-num" id="statDone">0</div>
+      <div class="stat-label">✅ 완료한 미션</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statTotal">0</div>
+      <div class="stat-label">📋 전체 미션</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statStreak">0</div>
+      <div class="stat-label">🔥 연속 달성일</div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <!-- MOTIVATION -->
+  <div class="motive-card">
+    <div class="motive-quote-mark">"</div>
+    <div class="motive-text" id="motiveText">새벽을 깨워 달리는 너라면,<br>이 시험도 완주할 수 있어. 🏆</div>
+    <div class="motive-sub">오늘의 응원 메시지</div>
+  </div>
+
+</div>
+
+<!-- VIEW: 미션 -->
+<div class="view" id="view-mission">
+
+  <div class="section-title">📅 주차 선택</div>
+  <div class="week-row">
+    <div class="week-card active" id="week1btn" onclick="selectWeek(1)">
+      <div class="week-glow"></div>
+      <div class="week-badge">WEEK 1</div>
+      <div class="week-name">워밍업</div>
+      <div class="week-km">0 ~ 21km</div>
+    </div>
+    <div class="week-card" id="week2btn" onclick="selectWeek(2)">
+      <div class="week-glow"></div>
+      <div class="week-badge">WEEK 2</div>
+      <div class="week-name">본격 레이스</div>
+      <div class="week-km">21 ~ 42km</div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+  <div class="section-title">✅ 일별 미션</div>
+  <div class="missions-wrap" id="missionList"></div>
+
+</div>
+
+<!-- VIEW: 개념 -->
+<div class="view" id="view-concept">
+  <div class="section-title">📖 시험 범위 핵심 개념</div>
+  <div id="todayFocus"></div>
+  <div id="conceptList"></div>
+  <div class="concept-note">※ 교과서 본문이 아니라 시험 대비용 핵심 요약입니다. 각 항목을 펼쳐 보고, 책·노트와 함께 확인하세요.</div>
+  <div class="spacer"></div>
+</div>
+
+<!-- VIEW: 전략 -->
+<div class="view" id="view-strategy">
+
+  <div class="section-title">🧠 마라톤으로 보는 공부법</div>
+
+  <div class="strategy-card">
+    <table class="analogy-table">
+      <tr><th>마라톤</th><th></th><th>공부</th></tr>
+      <tr><td>페이스 조절</td><td class="analogy-arrow">→</td><td>과목별 시간 배분</td></tr>
+      <tr><td>인터벌 훈련</td><td class="analogy-arrow">→</td><td>25분 집중 + 5분 휴식</td></tr>
+      <tr><td>훈련 일지</td><td class="analogy-arrow">→</td><td>공부 기록 노트</td></tr>
+      <tr><td>레이스 당일</td><td class="analogy-arrow">→</td><td>시험 날</td></tr>
+      <tr><td>기록 단축</td><td class="analogy-arrow">→</td><td>점수 향상</td></tr>
+    </table>
+  </div>
+
+  <div class="section-title">💡 동기부여 전략</div>
+
+  <div class="strategy-card">
+    <div class="strategy-num">1</div>
+    <div class="strategy-title">작은 목표 + 즉각 보상</div>
+    <div class="strategy-desc">하루 목표 달성 시 <strong>본인이 원하는 보상</strong>을 설정하자. 게임 30분, 유튜브 등 — 부모님이 꼭 지켜줘야 해요.</div>
+  </div>
+
+  <div class="strategy-card">
+    <div class="strategy-num">2</div>
+    <div class="strategy-title">구체적인 점수 목표</div>
+    <div class="strategy-desc">"잘 봐라" ❌<br><strong>"수학 70 → 75점"</strong> ✅<br>마라톤 기록 단축처럼 측정 가능하게!</div>
+  </div>
+
+  <div class="strategy-card">
+    <div class="strategy-num">3</div>
+    <div class="strategy-title">포모도로 = 인터벌 훈련</div>
+    <div class="strategy-desc">마라톤 인터벌 훈련과 같은 원리예요.</div>
+    <div class="pomo-pill">🍅 25분 집중 + 5분 휴식 반복</div>
+  </div>
+
+  <div class="strategy-card">
+    <div class="strategy-num">4</div>
+    <div class="strategy-title">진로와 연결하기</div>
+    <div class="strategy-desc">마라톤 + 공부 = <strong>스포츠 과학자, 스포츠 의학, 스포츠 마케팅</strong>...<br>"왜 공부하는지"가 보이면 달라져요.</div>
+  </div>
+
+  <div class="strategy-card">
+    <div class="strategy-num">5</div>
+    <div class="strategy-title">시험 이틀 전략 (7/6~7/7)</div>
+    <div class="strategy-desc"><strong>7/6 밤</strong> = 7/7 과목(과학·수학·영어) 최종 점검.<br><strong>7/7 밤</strong> = 7/8 과목(국어·기술가정) 집중!<br>새 내용 X, 오답 노트만. 일찍 자기 😴</div>
+  </div>
+
+  <div class="spacer"></div>
+
+</div>
+
+<!-- VIEW: 기록 -->
+<div class="view" id="view-record">
+  <div class="section-title">📊 나의 공부 기록</div>
+  <div class="sync-box" id="syncBox"></div>
+  <div id="recordSummary"></div>
+  <div id="recordList"></div>
+  <div class="rec-note">📌 기록은 이 기기·브라우저에 저장돼요. 항상 같은 주소로 접속하면 그대로 이어집니다.</div>
+  <button class="rec-reset" onclick="resetAllData()">🗑️ 모든 기록 초기화</button>
+  <button class="adm-enter" onclick="enterAdmin()">🔒 관리자 보기</button>
+  <div class="spacer"></div>
+</div>
+
+<!-- VIEW: 관리자 대시보드 (탭에 없음 · PIN 입력 시에만 열림) -->
+<div class="view" id="view-admin">
+  <div class="adm-top">
+    <div class="section-title" style="margin:0">👑 관리자 대시보드</div>
+    <button class="adm-close" onclick="exitAdmin()">✕ 닫기</button>
+  </div>
+  <div id="adminBody"></div>
+  <div class="spacer"></div>
+</div>
+
+<!-- TAB NAV -->
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('race', this)">
+    <span class="tab-icon">🏃</span>레이스
+  </button>
+  <button class="tab-btn" onclick="switchTab('mission', this)">
+    <span class="tab-icon">✅</span>미션
+  </button>
+  <button class="tab-btn" onclick="switchTab('concept', this)">
+    <span class="tab-icon">📖</span>개념
+  </button>
+  <button class="tab-btn" onclick="switchTab('strategy', this)">
+    <span class="tab-icon">💡</span>전략
+  </button>
+  <button class="tab-btn" onclick="switchTab('record', this)">
+    <span class="tab-icon">📊</span>기록
+  </button>
+</nav>
+
+<!-- Firebase SDK (compat) — 설정이 채워졌을 때만 사용. 미로드/오프라인이면 로컬 저장으로 동작 -->
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+
+<script>
+// ───────────────────────────────
+// DATA
+// ───────────────────────────────
+const EXAM_DATE = new Date('2026-07-07T08:40:00');
+const START_DATE = new Date('2026-06-24T00:00:00');
+const TOTAL_DAYS = Math.round((EXAM_DATE - START_DATE) / 86400000);
+
+const WEEK1 = [
+  { date: '6/24 (수)', academy: true, tasks: [
+    { id: 'w1d1t1', subj: 'math', text: '수학 2단원 — 부등식과 그 해·부등식의 성질', done: false },
+    { id: 'w1d1t2', subj: 'eng', text: '영어 학원 숙제 + L3 단어 외우기', done: false },
+    { id: 'w1d1t3', subj: null, text: '공부 기록 노트 시작하기 📓', done: false },
+  ]},
+  { date: '6/25 (목)', tasks: [
+    { id: 'w1d2t1', subj: 'math', text: '수학 2단원 — 일차부등식 풀이 연습', done: false },
+    { id: 'w1d2t2', subj: 'kor', text: '국어 3단원 — 설명 방법(정의·예시·비교 등) 정리', done: false },
+  ]},
+  { date: '6/26 (금)', academy: true, tasks: [
+    { id: 'w1d3t1', subj: 'sci', text: '과학 3단원 — 빛의 직진·반사·굴절', done: false },
+    { id: 'w1d3t2', subj: 'eng', text: '영어 학원 숙제 + L3 동명사·본문', done: false },
+  ]},
+  { date: '6/27 (토)', tasks: [
+    { id: 'w1d4t1', subj: 'math', text: '수학 2단원 — 연립방정식(가감법·대입법)', done: false },
+    { id: 'w1d4t2', subj: 'tech', text: '기가 1단원 — 청소년기 발달 핵심 정리', done: false },
+    { id: 'w1d4t3', subj: null, text: '이번 주 공부 기록 돌아보기', done: false },
+  ]},
+  { date: '6/28 (일)', tasks: [
+    { id: 'w1d5t1', subj: 'sci', text: '과학 3단원 — 거울·렌즈, 파동·소리의 성질', done: false },
+    { id: 'w1d5t2', subj: 'kor', text: '국어 4단원 — 반어와 역설(늦가을·희망가)', done: false },
+  ]},
+  { date: '6/29 (월)', academy: true, tasks: [
+    { id: 'w1d6t1', subj: 'tech', text: '기가 2·3단원 — 식·의·주생활, 자원관리', done: false },
+    { id: 'w1d6t2', subj: 'eng', text: '영어 학원 숙제 + L3 현재완료 복습', done: false },
+  ]},
+  { date: '6/30 (화)', tasks: [
+    { id: 'w1d7t1', subj: null, text: '📊 1주차 점검 — 미완료 미션 보충', done: false },
+    { id: 'w1d7t2', subj: 'math', text: '수학 3단원 — 함수·일차함수 그래프 시작', done: false },
+  ]},
+];
+
+const WEEK2 = [
+  { date: '7/1 (수)', academy: true, tasks: [
+    { id: 'w2d1t1', subj: 'math', text: '수학 3단원 — 절편·기울기, 그래프 성질', done: false },
+    { id: 'w2d1t2', subj: 'eng', text: '영어 학원 숙제 + L4 단어·관계대명사', done: false },
+  ]},
+  { date: '7/2 (목)', tasks: [
+    { id: 'w2d2t1', subj: 'sci', text: '과학 4단원 — 원소·원자·분자, 원소 기호', done: false },
+    { id: 'w2d2t2', subj: 'kor', text: '국어 3단원 — 설명 방법 활용해 글쓰기', done: false },
+  ]},
+  { date: '7/3 (금)', academy: true, tasks: [
+    { id: 'w2d3t1', subj: 'tech', text: '기가 4·5단원 — 기술혁신·발명, 재료와 제품', done: false },
+    { id: 'w2d3t2', subj: 'eng', text: '영어 학원 숙제 + L4 접속사·충고/허락 표현', done: false },
+  ]},
+  { date: '7/4 (토)', tasks: [
+    { id: 'w2d4t1', subj: 'math', text: '수학 2·3단원 예상문제 15개(부등식·연립·함수)', done: false },
+    { id: 'w2d4t2', subj: 'sci', text: '과학 4단원 — 이온·앙금 생성 반응 정리', done: false },
+    { id: 'w2d4t3', subj: null, text: '전 과목 오답 노트 총정리', done: false },
+  ]},
+  { date: '7/5 (일)', tasks: [
+    { id: 'w2d5t1', subj: 'kor', text: '국어 3·4단원 1회독 — 풍자(양반전)·영상 제작 포함', done: false },
+    { id: 'w2d5t2', subj: 'tech', text: '기가 1~5단원 소단원 체크리스트 1회독', done: false },
+    { id: 'w2d5t3', subj: null, text: '충분한 휴식 + 컨디션 관리', done: false },
+  ]},
+  { date: '7/6 (월)', academy: true, tasks: [
+    { id: 'w2d6t1', subj: 'sci', text: '🎯 7/7 점검: 과학(빛·물질)+수학(부등식·함수) 오답', done: false },
+    { id: 'w2d6t2', subj: 'eng', text: '영어 학원 숙제 + L3·L4 시험범위 단어·문법', done: false },
+    { id: 'w2d6t3', subj: null, text: '🚫 새 내용 금지 · 일찍 자기 😴', done: false },
+  ]},
+  { date: '7/7 (화)', exam: 'D1', tasks: [
+    { id: 'w2d7t1', subj: null, text: '📝 오늘 시험: 과학·수학·영어 ✏️', done: false },
+    { id: 'w2d7t2', subj: 'kor', text: '🔁 저녁엔 내일 과목! 국어 3·4단원 복습', done: false },
+    { id: 'w2d7t3', subj: 'tech', text: '기가 1~5단원 소단원 최종 점검', done: false },
+  ]},
+  { date: '7/8 (수)', exam: 'D2', tasks: [
+    { id: 'w2d8t1', subj: null, text: '📝 오늘 시험: 국어·기술가정 ✏️', done: false },
+    { id: 'w2d8t2', subj: null, text: '🏁 시험 마라톤 완주! 정말 고생했어 🏆', done: false },
+  ]},
+];
+
+const MOTIVES = [
+  "새벽을 깨워 달리는 너라면,\n이 시험도 완주할 수 있어. 🏆",
+  "42km를 완주하는 힘이 있다면\n14일도 버틸 수 있어. 💪",
+  "마라톤에 지름길이 없듯,\n공부도 한 걸음씩이야. 🏃",
+  "힘들 때 포기하지 않는 게\n마라톤이고, 공부야. 🔥",
+  "오늘 완료한 미션이\n내일의 페이스를 만들어. ⚡",
+  "결승선은 7월 7일.\n지금 네가 있는 곳이 어디든, 달리고 있잖아! 🏁",
+  "어제보다 한 문제 더.\n그게 진짜 실력이 되는 거야. 📈",
+  "긴장될 땐 숨 한 번 크게.\n페이스만 지키면 돼. 🌬️",
+  "완벽하지 않아도 괜찮아.\n끝까지 가는 게 이기는 거야. 🥇",
+  "오늘의 5분이 모여\n시험장의 자신감이 된다. ✨",
+  "달리다 보면 오르막도 끝나.\n이 단원도 곧 끝나. ⛰️",
+  "넌 이미 출발선을 넘었어.\n남은 건 완주뿐! 🏃‍♂️",
+];
+
+// ───────────────────────────────
+// STATE
+// ───────────────────────────────
+let checked = JSON.parse(localStorage.getItem('marathonChecked') || '{}');
+let currentWeek = 1;
+
+// 퀴즈 결과를 날짜별로 영구 저장 (휘발 방지)
+let quizLog = JSON.parse(localStorage.getItem('marathonQuizLog') || '{}');
+function saveQuizLog() { localStorage.setItem('marathonQuizLog', JSON.stringify(quizLog)); }
+function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+function dateKeyOf(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+function todayKey() { return dateKeyOf(new Date()); }
+
+// ───────────────────────────────
+// FIREBASE 동기화 (선택)
+// ───────────────────────────────
+// 🔧 Firebase 콘솔 > 프로젝트 설정 > 내 앱(웹 </>) 의 firebaseConfig 값을 아래에 붙여넣으세요.
+//    projectId 와 apiKey 가 비어 있으면 동기화는 꺼지고 이 기기에만 저장됩니다(앱은 그대로 작동).
+const FIREBASE_CONFIG = {
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
+};
+const SYNC_COLLECTION = 'marathon_study';
+
+// 👑 관리자 접근은 기본적으로 "Firebase 이메일 로그인"으로 보호됩니다(비밀번호는 파일에 없음).
+//    아래 ADMIN_PIN은 Firebase가 없는 오프라인 상황의 "보조 잠금"일 뿐이라 비워두는 걸 권장해요.
+//    (PIN을 적으면 파일을 열어 볼 수 있는 한계가 있으니, 진짜 보호는 위쪽 Firebase 인증을 쓰세요.)
+const ADMIN_PIN = '';
+let isAdmin = false;
+
+let db = null;
+let firebaseReady = false;
+let currentUser = localStorage.getItem('marathonUser') || null; // 동기화 문서 ID (이름_PIN)
+let pushTimer = null;
+
+function firebaseConfigured() { return !!(FIREBASE_CONFIG.projectId && FIREBASE_CONFIG.apiKey); }
+
+function initFirebase() {
+  if (!firebaseConfigured()) return;
+  if (typeof firebase === 'undefined') return; // SDK 로드 실패(오프라인 등)
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+    firebaseReady = true;
+  } catch (e) {
+    console.warn('Firebase init 실패:', e);
+    firebaseReady = false;
+  }
+}
+function isSynced() { return firebaseReady && !!db && !!currentUser; }
+function setSyncStatus(msg) { const el = document.getElementById('syncStatus'); if (el) el.textContent = msg; }
+
+function sanitizeId(name, pin) {
+  const n = (name || '').trim().replace(/[\/\\.#$\[\]\s'"]/g, '_').slice(0, 20);
+  const p = (pin || '').trim().replace(/[^0-9]/g, '').slice(0, 6);
+  return (n && p) ? (n + '_' + p) : '';
+}
+
+function mergeQuizLog(a, b) {
+  const out = JSON.parse(JSON.stringify(a || {}));
+  for (const dk in (b || {})) {
+    out[dk] = out[dk] || {};
+    for (const subj in b[dk]) {
+      const rb = b[dk][subj];
+      const ra = out[dk][subj] || { answers: {}, right: 0, done: 0, total: rb.total };
+      ra.answers = Object.assign({}, ra.answers, rb.answers);
+      ra.done = Object.keys(ra.answers).length;
+      ra.right = Object.values(ra.answers).filter(x => x.ok).length;
+      ra.total = rb.total || ra.total;
+      out[dk][subj] = ra;
+    }
+  }
+  return out;
+}
+
+async function pushRemoteNow() {
+  if (!isSynced()) return;
+  await db.collection(SYNC_COLLECTION).doc(currentUser).set(
+    { checked: checked, quizLog: quizLog, updatedAt: Date.now() },
+    { merge: true }
+  );
+}
+function schedulePush() {
+  if (!isSynced()) return;
+  setSyncStatus('💾 저장 중…');
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(async () => {
+    try { await pushRemoteNow(); setSyncStatus('✅ 동기화됨'); }
+    catch (e) { setSyncStatus('⚠️ 저장 실패 (이 기기엔 저장됨)'); }
+  }, 700);
+}
+
+async function pullRemote() {
+  if (!isSynced()) return;
+  setSyncStatus('☁️ 불러오는 중…');
+  try {
+    const snap = await db.collection(SYNC_COLLECTION).doc(currentUser).get();
+    if (snap.exists) {
+      const data = snap.data() || {};
+      checked = Object.assign({}, checked, data.checked || {});
+      quizLog = mergeQuizLog(quizLog, data.quizLog || {});
+      localStorage.setItem('marathonChecked', JSON.stringify(checked));
+      saveQuizLog();
+    }
+    await pushRemoteNow(); // 병합 결과를 다시 올려 양쪽 일치
+    updateStats(); renderMissions(); renderConcepts(); renderTodayFocus(); renderRecord();
+    setSyncStatus('✅ 동기화됨');
+  } catch (e) {
+    console.warn(e);
+    setSyncStatus('⚠️ 연결 실패 (이 기기 기록은 유지돼요)');
+  }
+}
+
+async function loginSync() {
+  if (!firebaseReady) { setSyncStatus('⚠️ 지금은 연결할 수 없어요(설정/네트워크 확인)'); return; }
+  const name = document.getElementById('syncName').value;
+  const pin = document.getElementById('syncPin').value;
+  const id = sanitizeId(name, pin);
+  if (!id) { setSyncStatus('이름과 숫자 PIN을 입력해 주세요'); return; }
+  currentUser = id;
+  localStorage.setItem('marathonUser', id);
+  await pullRemote();
+  renderSyncUI();
+}
+function logoutSync() {
+  currentUser = null;
+  localStorage.removeItem('marathonUser');
+  renderSyncUI();
+  setSyncStatus('로그아웃됨 (이 기기에는 기록이 남아 있어요)');
+}
+
+function renderSyncUI() {
+  const box = document.getElementById('syncBox');
+  if (!box) return;
+  if (!firebaseConfigured()) {
+    box.innerHTML = '<div class="sync-head">☁️ 클라우드 동기화</div>' +
+      '<div class="sync-note">아직 설정 전이에요. 코드 상단의 <b>FIREBASE_CONFIG</b>에 Firebase 설정을 넣으면 기기 간 동기화가 켜집니다. 지금은 이 기기에만 저장돼요.</div>';
+    return;
+  }
+  if (firebaseConfigured() && !firebaseReady) {
+    box.innerHTML = '<div class="sync-head">☁️ 클라우드 동기화</div>' +
+      '<div class="sync-note">연결을 준비 중이거나 오프라인이에요. 인터넷 연결 후 새로고침하면 동기화가 켜집니다.</div>';
+    return;
+  }
+  if (!isSynced()) {
+    box.innerHTML = '<div class="sync-head">☁️ 클라우드 동기화</div>' +
+      '<div class="sync-note">이름과 PIN으로 연결하면 다른 기기에서도 같은 기록을 볼 수 있어요.</div>' +
+      '<div class="sync-form">' +
+        '<input id="syncName" class="sync-in" placeholder="이름" maxlength="20">' +
+        '<input id="syncPin" class="sync-in" placeholder="숫자 PIN" inputmode="numeric" maxlength="6">' +
+        '<button class="sync-btn" onclick="loginSync()">연결</button>' +
+      '</div>' +
+      '<div class="sync-status" id="syncStatus"></div>';
+    return;
+  }
+  const name = currentUser.split('_')[0];
+  box.innerHTML = '<div class="sync-head">☁️ ' + name + '님 · 동기화 켜짐</div>' +
+    '<div class="sync-status" id="syncStatus">✅ 동기화됨</div>' +
+    '<div class="sync-form">' +
+      '<button class="sync-btn" onclick="pullRemote()">지금 동기화</button>' +
+      '<button class="sync-btn ghost" onclick="logoutSync()">로그아웃</button>' +
+    '</div>';
+}
+
+// ───────────────────────────────
+// COUNTDOWN
+// ───────────────────────────────
+function updateCountdown() {
+  const now = new Date();
+  const diff = EXAM_DATE - now;
+  if (diff <= 0) {
+    document.getElementById('cdDays').textContent = '0';
+    document.getElementById('cdHours').textContent = '00';
+    document.getElementById('cdMins').textContent = '00';
+    document.getElementById('cdSecs').textContent = '00';
+    document.getElementById('examBadge').textContent = 'D-Day!';
+    return;
+  }
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  document.getElementById('cdDays').textContent = d;
+  document.getElementById('cdHours').textContent = String(h).padStart(2,'0');
+  document.getElementById('cdMins').textContent = String(m).padStart(2,'0');
+  document.getElementById('cdSecs').textContent = String(s).padStart(2,'0');
+  document.getElementById('examBadge').textContent = `D-${d}`;
+}
+
+// ───────────────────────────────
+// RACE TRACK
+// ───────────────────────────────
+function updateTrack() {
+  const now = new Date();
+  const elapsed = now - START_DATE;
+  const total = EXAM_DATE - START_DATE;
+  let pct = Math.min(100, Math.max(0, (elapsed / total) * 100));
+  const km = Math.round((pct / 100) * 42);
+  document.getElementById('trackFill').style.width = pct + '%';
+  document.getElementById('kmInfo').textContent = `${km} km 지점`;
+  document.getElementById('pctInfo').textContent = `${Math.round(pct)}% 완료`;
+}
+
+// ───────────────────────────────
+// STATS
+// ───────────────────────────────
+function updateStats() {
+  const allTasks = [...WEEK1, ...WEEK2].flatMap(d => d.tasks);
+  const total = allTasks.length;
+  const done = allTasks.filter(t => checked[t.id]).length;
+  document.getElementById('statDone').textContent = done;
+  document.getElementById('statTotal').textContent = total;
+
+  // Streak: count consecutive days from today backwards with at least 1 task done
+  const allDays = [...WEEK1, ...WEEK2];
+  let streak = 0;
+  const today = new Date();
+  for (let i = allDays.length - 1; i >= 0; i--) {
+    const dayDone = allDays[i].tasks.some(t => checked[t.id]);
+    if (dayDone) streak++;
+    else break;
+  }
+  document.getElementById('statStreak').textContent = streak;
+}
+
+// ───────────────────────────────
+// MISSIONS
+// ───────────────────────────────
+const subjMap = {
+  math: { cls: 'subj-math', label: '수학' },
+  kor:  { cls: 'subj-kor',  label: '국어' },
+  eng:  { cls: 'subj-eng',  label: '영어' },
+  sci:  { cls: 'subj-sci',  label: '과학' },
+  tech: { cls: 'subj-tech', label: '기가' },
+};
+
+function parseDayDate(dateStr) {
+  const m = dateStr.match(/(\d+)\/(\d+)/);
+  return new Date(2026, parseInt(m[1],10)-1, parseInt(m[2],10));
+}
+function dayPhase(dateStr) {
+  const d = parseDayDate(dateStr);
+  const today = new Date(); today.setHours(0,0,0,0);
+  if (d.getTime() === today.getTime()) return 'today';
+  if (d.getTime() < today.getTime()) return 'past';
+  return 'future';
+}
+
+function renderMissions() {
+  const data = currentWeek === 1 ? WEEK1 : WEEK2;
+  const container = document.getElementById('missionList');
+  container.innerHTML = '';
+
+  data.forEach((day) => {
+    const allDone = day.tasks.every(t => checked[t.id]);
+    const phase = dayPhase(day.date);
+    let statusCls, statusText;
+    if (day.exam) {
+      statusCls = phase === 'past' ? 'done' : 'today';
+      statusText = day.exam === 'D1' ? '📝 1차 시험' : '📝 2차 시험';
+    } else if (phase === 'today') {
+      statusCls = 'today'; statusText = '🔴 오늘';
+    } else if (phase === 'past') {
+      statusCls = allDone ? 'done' : 'upcoming';
+      statusText = allDone ? '✅ 완료' : '⏳ 미완료';
+    } else {
+      statusCls = allDone ? 'done' : 'upcoming';
+      statusText = allDone ? '✅ 완료' : '예정';
+    }
+
+    const academyBadge = day.academy ? '<span class="day-academy">🏫 영어학원</span>' : '';
+
+    let tasksHTML = day.tasks.map(t => {
+      const isDone = !!checked[t.id];
+      const subj = t.subj ? subjMap[t.subj] : null;
+      return `
+        <div class="task-item" onclick="toggleTask('${t.id}')">
+          <div class="task-check ${isDone ? 'checked' : ''}" id="chk-${t.id}"></div>
+          <div class="task-text ${isDone ? 'done-text' : ''}" id="txt-${t.id}">${t.text}</div>
+          ${subj ? `<div class="task-subject ${subj.cls}">${subj.label}</div>` : ''}
+        </div>`;
+    }).join('');
+
+    container.innerHTML += `
+      <div class="mission-day">
+        <div class="mission-day-header">
+          <div class="day-label">${day.date}${academyBadge}</div>
+          <div class="day-status ${statusCls}">${statusText}</div>
+        </div>
+        ${tasksHTML}
+      </div>`;
+  });
+}
+
+function toggleTask(id) {
+  checked[id] = !checked[id];
+  localStorage.setItem('marathonChecked', JSON.stringify(checked));
+  schedulePush();
+
+  // Update check UI
+  const chk = document.getElementById('chk-' + id);
+  const txt = document.getElementById('txt-' + id);
+  if (chk) chk.className = 'task-check' + (checked[id] ? ' checked' : '');
+  if (txt) txt.className = 'task-text' + (checked[id] ? ' done-text' : '');
+
+  updateStats();
+}
+
+function selectWeek(w) {
+  currentWeek = w;
+  document.getElementById('week1btn').className = 'week-card' + (w===1?' active':'');
+  document.getElementById('week2btn').className = 'week-card' + (w===2?' active':'');
+  renderMissions();
+}
+
+// ───────────────────────────────
+// MOTIVATION
+// ───────────────────────────────
+function updateMotive() {
+  const idx = ((dayIndex() % MOTIVES.length) + MOTIVES.length) % MOTIVES.length;
+  document.getElementById('motiveText').innerHTML = MOTIVES[idx].replace('\n', '<br>');
+}
+
+// ───────────────────────────────
+// CONCEPTS (개념)
+// ───────────────────────────────
+const CONCEPTS = [
+  { subj: 'math', units: [
+    { name: '2단원 · 부등식과 연립방정식', items: [
+      ['부등식과 그 해', '부등호(<, >, ≤, ≥)로 대소 관계를 나타낸 식. 참이 되게 하는 미지수 값이 "해".'],
+      ['부등식의 성질', '양변에 같은 수 더하기·빼기는 방향 그대로. 음수를 곱하거나 나누면 부등호 방향이 바뀜!'],
+      ['일차부등식의 풀이', '이항해서 ax > b 꼴로 정리 → x 계수로 나눔(음수면 방향 뒤집기). 해를 수직선에 표시.'],
+      ['연립일차방정식과 그 해', '미지수 2개짜리 일차방정식 두 개를 묶은 것. 둘 다 만족하는 (x, y)가 해.'],
+      ['연립방정식의 풀이', '가감법(계수 맞춰 더하거나 빼서 소거)·대입법(한 식을 다른 식에 대입)으로 미지수 줄이기.'],
+    ]},
+    { name: '3단원 · 일차함수', items: [
+      ['함수', 'x 값 하나에 y 값이 오직 하나 정해지는 대응 관계. y = f(x).'],
+      ['일차함수의 뜻·그래프', 'y = ax + b (a≠0) 꼴. 그래프는 직선.'],
+      ['절편과 기울기', 'y절편 = b, x절편 = (y=0일 때 x). 기울기 a = (y 증가량)/(x 증가량).'],
+      ['그래프의 성질', 'a>0이면 우상향, a<0이면 우하향. |a|가 클수록 더 가파름.'],
+      ['일차함수의 식 구하기', '기울기와 한 점, 또는 두 점이 주어지면 y = ax + b로 결정.'],
+      ['일차함수와 일차방정식', 'ax + by + c = 0의 그래프 = 일차함수의 직선.'],
+      ['그래프와 연립방정식', '두 직선의 교점 좌표 = 연립방정식의 해.'],
+    ]},
+  ]},
+  { subj: 'sci', units: [
+    { name: '3단원 · 빛과 파동', items: [
+      ['빛의 직진·반사·굴절', '빛은 곧게 나아가고(직진), 거울에서 튕기고(반사: 입사각=반사각), 다른 매질로 들어갈 때 꺾임(굴절).'],
+      ['거울과 렌즈', '평면·오목·볼록 거울, 볼록·오목 렌즈에 따라 상의 위치·크기·종류(실상/허상)가 달라짐.'],
+      ['파동의 발생과 전달', '한 곳의 진동이 주변으로 퍼지는 현상. 매질은 제자리에서 진동하고 에너지만 전달.'],
+      ['파동의 성질', '파장·진폭·진동수·주기로 표현. 진행 방향과 진동 방향에 따라 횡파/종파 구분.'],
+      ['소리의 성질', '소리는 매질(공기 등)을 통해 전달되는 파동. 진폭=크기, 진동수=높낮이, 파형=음색.'],
+    ]},
+    { name: '4단원 · 물질의 구성', items: [
+      ['원소', '더 이상 다른 물질로 분해되지 않는 물질의 기본 성분(예: 산소, 수소).'],
+      ['원자 모형', '물질을 이루는 가장 작은 입자. (+)전하 원자핵과 (−)전하 전자로 구성.'],
+      ['분자', '물질의 성질을 지니는 가장 작은 입자. 원자가 결합해 형성(예: 물 H₂O).'],
+      ['원소 기호', '원소를 알파벳 기호로 표현(H, O, C…). 화학식으로 분자를 나타냄.'],
+      ['이온의 정의와 형성', '원자가 전자를 잃거나 얻어 전하를 띤 입자. 양이온(전자 잃음), 음이온(전자 얻음).'],
+      ['앙금 생성 반응', '두 수용액을 섞을 때 물에 녹지 않는 앙금이 생기는 반응(예: 은 이온 + 염화 이온 → 흰색 앙금).'],
+    ]},
+  ]},
+  { subj: 'eng', units: [
+    { name: 'Lesson 3 · What a great idea', items: [
+      ['의사소통 표현', '제안하기(Why don\'t we…? / How about…?), 경험 묻기(Have you ever…?).'],
+      ['동명사', '동사+ing가 명사처럼 쓰임. 주어·보어 역할 (예: Reading is fun / My hobby is reading).'],
+      ['현재완료 시제', 'have/has + 과거분사. 과거~현재를 연결(경험·완료·계속·결과).'],
+    ]},
+    { name: 'Lesson 4 · Are you money smart?', items: [
+      ['의사소통 표현', '충고하기(You should… / You\'d better…), 허락 구하기(May I…? / Can I…?).'],
+      ['관계대명사(주격)', 'who/which/that이 앞 명사를 꾸미는 절을 이끎(절 안에서 주어 역할).'],
+      ['시간 접속사', 'when(~할 때), before(~하기 전에), after(~한 후에)로 시간 관계 연결.'],
+    ]},
+  ]},
+  { subj: 'kor', units: [
+    { name: '3단원 · 정보를 담고 정보를 펼치고', items: [
+      ['설명 방법 파악하며 읽기', '정의·예시·비교·대조·분류·분석·인과 등 설명 방법을 구분하며 글의 내용을 이해.'],
+      ['설명 방법 활용해 글쓰기', '주제에 맞는 설명 방법을 골라 정보를 정확하고 짜임새 있게 전달.'],
+    ]},
+    { name: '4단원 · 개성있고 참신하게', items: [
+      ['반어와 역설', '반어=속뜻과 반대로 표현, 역설=겉으론 모순이나 진리를 담은 표현 (늦가을·희망가).'],
+      ['문학 속 풍자', '대상을 우스꽝스럽게 비틀어 비판 (양반전 — 양반의 위선을 풍자).'],
+      ['영상 매체 자료 제작', '주제·대상에 맞게 영상 매체로 내용을 기획·구성·표현하기.'],
+    ]},
+  ]},
+  { subj: 'tech', units: [
+    { name: '1단원 · 청소년기 발달', items: [
+      ['발달과 자아 정체성', '신체·정서·사회성 발달과 "나는 누구인가" 정체성 형성.'],
+      ['성장과 건강', '급격한 성장에 맞춘 수면·운동·영양 등 건강 관리.'],
+      ['건강한 성 가치관', '성에 대한 올바른 이해와 책임 있는 태도.'],
+      ['또래와 세대 관계', '친구·가족·세대 간 소통과 갈등 해결.'],
+      ['문제와 적응 유연성', '스트레스·갈등을 건강하게 극복하는 회복력.'],
+      ['중독과 예방', '스마트폰·게임·약물 등 중독의 위험과 예방.'],
+    ]},
+    { name: '2단원 · 청소년 자립을 위한 생활', items: [
+      ['청소년기 영양', '성장기에 필요한 영양소와 균형 잡힌 식사.'],
+      ['건강한 식생활', '올바른 식습관과 식품 선택.'],
+      ['옷차림과 자기 표현', '때·장소에 맞는 옷차림, 옷으로 개성 표현.'],
+      ['의복 마련·친환경 의생활', '합리적 구매 계획과 지속가능한 의생활.'],
+      ['쾌적·안전한 주생활', '건강하고 안전한 주거 환경 관리.'],
+    ]},
+    { name: '3단원 · 지속가능한 자원관리', items: [
+      ['생활 자원의 이해', '시간·돈·물자 등 생활 자원의 종류와 관리.'],
+      ['의식주 생활 자원의 선택', '합리적이고 지속가능한 소비와 선택.'],
+      ['디지털 생활환경의 변화', '디지털 기술이 바꾼 일상생활의 모습.'],
+    ]},
+    { name: '4단원 · 기술혁신과 발명', items: [
+      ['기술과 사회', '기술이 사회·생활에 미치는 영향.'],
+      ['기술 혁신·표준화·적정기술', '새 기술, 표준의 필요성, 적정기술의 의미.'],
+      ['기술적 문제 해결', '문제 인식 → 설계 → 실현 → 평가의 과정.'],
+      ['발명과 문제 해결', '창의적 아이디어로 문제를 해결하는 발명.'],
+      ['지식 재산권', '특허·저작권 등 아이디어를 보호하는 권리.'],
+    ]},
+    { name: '5단원 · 재료와 제품 개발', items: [
+      ['재료의 특성과 가공', '다양한 재료의 성질과 가공 방법.'],
+      ['제품 설계와 제도', '제품을 구상하고 도면(제도)으로 표현.'],
+      ['창의적인 제품 만들기', '아이디어를 실제 제품으로 구현.'],
+    ]},
+  ]},
+];
+
+const conceptColor = { math:'#f5a623', kor:'#e94560', eng:'#2ecc71', sci:'#3498db', tech:'#1abc9c' };
+
+// 담당 교사 한마디 (소개 / 퀴즈)
+const TEACHER = {
+  math: { intro: '수학쌤이야. 이번 시험 핵심은 ① 부등식에서 음수로 나눌 때 부등호 뒤집기, ② 일차함수 그래프 읽기야. 표·그래프 먼저 보고 문제로 확인하자!', quiz: '아래 5문제로 점검! 틀려도 괜찮아, 해설을 꼭 읽자 👇' },
+  sci:  { intro: '과학쌤이야. 빛(반사·굴절)과 물질(원소·이온)이 단골 출제 포인트! 그림과 표로 이미지부터 잡아 두자.', quiz: '개념 확인 5문제 나갑니다. 헷갈린 건 해설로 잡아두기!' },
+  eng:  { intro: '영어쌤이에요. Lesson 3은 동명사·현재완료, Lesson 4는 관계대명사·시간 접속사가 핵심! 표로 정리하고 문장으로 확인해요.', quiz: '문장으로 바로 확인하는 5문제예요. 출발! 👇' },
+  kor:  { intro: '국어쌤입니다. 3단원은 "설명 방법" 구분, 4단원은 반어·역설·풍자가 포인트예요. 헷갈리는 짝부터 표로 정리해요.', quiz: '확인 문제 5개! 반어와 역설, 비교와 대조 구분에 집중해요 👇' },
+  tech: { intro: '기가쌤이야. 1~5단원 범위가 넓으니 "키워드"로 기억하는 게 전략! 표로 핵심만 잡고 가자.', quiz: '범위가 넓은 만큼 5문제로 빈틈 점검! 👇' },
+};
+
+// 그림·표 (자체 제작, 외부 이미지 없음)
+const VISUALS = {
+  math: `
+    <div class="cept-h">📊 부등식의 성질</div>
+    <table class="cept-table">
+      <tr><th>양변에 한 변형</th><th>부등호 방향</th></tr>
+      <tr><td>같은 수 더하기·빼기</td><td>그대로</td></tr>
+      <tr><td>양수 곱하기·나누기</td><td>그대로</td></tr>
+      <tr><td>음수 곱하기·나누기</td><td>⚠️ 바뀜</td></tr>
+    </table>
+    <div class="cept-h">📈 일차함수 y = ax + b</div>
+    <div class="cept-fig">
+      <svg viewBox="0 0 200 200" width="180" height="180">
+        <line x1="12" y1="100" x2="188" y2="100" stroke="#7a7a9a" stroke-width="1"/>
+        <line x1="100" y1="12" x2="100" y2="188" stroke="#7a7a9a" stroke-width="1"/>
+        <text x="184" y="114" fill="#7a7a9a" font-size="10">x</text>
+        <text x="104" y="20" fill="#7a7a9a" font-size="10">y</text>
+        <line x1="100" y1="172" x2="172" y2="28" stroke="#f5a623" stroke-width="2.5"/>
+        <circle cx="100" cy="172" r="3.5" fill="#e94560"/>
+        <text x="106" y="178" fill="#e94560" font-size="9">y절편</text>
+        <text x="140" y="44" fill="#f5a623" font-size="9">y=2x−4</text>
+      </svg>
+    </div>
+    <div class="cept-cap">a = 기울기, b = y절편</div>
+    <table class="cept-table">
+      <tr><th>a &gt; 0</th><td>오른쪽 위로 (우상향) ↗</td></tr>
+      <tr><th>a &lt; 0</th><td>오른쪽 아래로 (우하향) ↘</td></tr>
+      <tr><th>b</th><td>그래프가 y축과 만나는 값 (y절편)</td></tr>
+    </table>`,
+  sci: `
+    <div class="cept-h">🔦 빛의 반사 (입사각 = 반사각)</div>
+    <div class="cept-fig">
+      <svg viewBox="0 0 200 120" width="190" height="114">
+        <line x1="20" y1="95" x2="180" y2="95" stroke="#7a7a9a" stroke-width="2"/>
+        <line x1="100" y1="95" x2="100" y2="22" stroke="#7a7a9a" stroke-width="1" stroke-dasharray="4 3"/>
+        <line x1="45" y1="30" x2="100" y2="95" stroke="#3498db" stroke-width="2.5"/>
+        <line x1="100" y1="95" x2="155" y2="30" stroke="#f5a623" stroke-width="2.5"/>
+        <text x="36" y="26" fill="#3498db" font-size="9">입사 광선</text>
+        <text x="138" y="26" fill="#f5a623" font-size="9">반사 광선</text>
+        <text x="104" y="40" fill="#7a7a9a" font-size="8">법선</text>
+        <text x="150" y="110" fill="#7a7a9a" font-size="9">거울</text>
+      </svg>
+    </div>
+    <div class="cept-cap">법선을 기준으로 입사각 = 반사각</div>
+    <div class="cept-h">⚛️ 자주 나오는 원소 기호</div>
+    <table class="cept-table">
+      <tr><th>원소</th><th>기호</th><th>원소</th><th>기호</th></tr>
+      <tr><td>수소</td><td>H</td><td>나트륨</td><td>Na</td></tr>
+      <tr><td>산소</td><td>O</td><td>염소</td><td>Cl</td></tr>
+      <tr><td>탄소</td><td>C</td><td>마그네슘</td><td>Mg</td></tr>
+      <tr><td>질소</td><td>N</td><td>칼륨</td><td>K</td></tr>
+    </table>
+    <div class="cept-h">🔋 이온</div>
+    <table class="cept-table">
+      <tr><th>양이온</th><td>전자를 잃음 → (+) (예: Na⁺)</td></tr>
+      <tr><th>음이온</th><td>전자를 얻음 → (−) (예: Cl⁻)</td></tr>
+    </table>`,
+  eng: `
+    <div class="cept-h">⏳ 현재완료 (have/has + 과거분사)</div>
+    <table class="cept-table">
+      <tr><th>용법</th><th>같이 쓰는 말</th></tr>
+      <tr><td>경험</td><td>ever, never, before</td></tr>
+      <tr><td>완료</td><td>just, already, yet</td></tr>
+      <tr><td>계속</td><td>for, since</td></tr>
+      <tr><td>결과</td><td>(과거 일이 지금에 영향)</td></tr>
+    </table>
+    <div class="cept-h">🔗 주격 관계대명사</div>
+    <table class="cept-table">
+      <tr><th>선행사</th><th>관계대명사</th></tr>
+      <tr><td>사람</td><td>who (that)</td></tr>
+      <tr><td>사물·동물</td><td>which (that)</td></tr>
+    </table>
+    <div class="cept-h">🟢 동명사 (동사+ing = 명사)</div>
+    <table class="cept-table">
+      <tr><th>주어</th><td>Reading is fun.</td></tr>
+      <tr><th>보어</th><td>My hobby is reading.</td></tr>
+      <tr><th>목적어</th><td>I enjoy reading.</td></tr>
+    </table>`,
+  kor: `
+    <div class="cept-h">🧩 설명 방법</div>
+    <table class="cept-table">
+      <tr><th>방법</th><th>뜻</th></tr>
+      <tr><td>정의</td><td>대상의 뜻을 밝힘</td></tr>
+      <tr><td>예시</td><td>구체적인 예를 듦</td></tr>
+      <tr><td>비교</td><td>공통점 중심</td></tr>
+      <tr><td>대조</td><td>차이점 중심</td></tr>
+      <tr><td>분류</td><td>일정 기준으로 묶음</td></tr>
+      <tr><td>분석</td><td>구성 요소로 나눔</td></tr>
+      <tr><td>인과</td><td>원인과 결과로 설명</td></tr>
+    </table>
+    <div class="cept-h">🎭 반어 vs 역설</div>
+    <table class="cept-table">
+      <tr><th>반어</th><td>속뜻과 "반대로" 말하기 (예: 정말 잘~한다!)</td></tr>
+      <tr><th>역설</th><td>겉은 모순, 속엔 진리 (예: 찬란한 슬픔)</td></tr>
+    </table>`,
+  tech: `
+    <div class="cept-h">🛠️ 기술적 문제 해결 과정</div>
+    <table class="cept-table">
+      <tr><td>① 문제 인식</td><td>→</td><td>② 설계(아이디어)</td></tr>
+      <tr><td>③ 실현(만들기)</td><td>→</td><td>④ 평가</td></tr>
+    </table>
+    <div class="cept-h">💡 꼭 기억할 키워드</div>
+    <table class="cept-table">
+      <tr><th>적정기술</th><td>그 지역 환경·자원에 맞춘 기술</td></tr>
+      <tr><th>표준화</th><td>규격을 통일해 호환·생산 효율 ↑</td></tr>
+      <tr><th>지식 재산권</th><td>특허·저작권 등 아이디어 보호</td></tr>
+    </table>
+    <div class="cept-h">🥗 청소년기 영양</div>
+    <div class="concept-v">성장·발달이 활발한 시기라 단백질·칼슘·철분 등 균형 잡힌 영양이 특히 중요!</div>`,
+};
+
+// 확인 문제 (담당 교사 출제)
+const QUIZ = {
+  math: {
+    '2단원': [
+      { q: '부등식 −2x &gt; 6 의 해는?', options: ['x &gt; −3','x &lt; −3','x &gt; 3','x &lt; 3'], answer: 1, explain: '음수(−2)로 나눌 때 부등호 방향이 바뀐다 → x &lt; −3!' },
+      { q: '(O/X) 부등식 양변에 같은 음수를 곱하면 부등호 방향은 그대로다.', options: ['⭕ 맞다','❌ 아니다'], answer: 1, explain: '음수를 곱하거나 나누면 방향이 바뀐다. 그래서 X!' },
+      { q: '일차부등식 3x − 2 ≤ 7 의 해는?', options: ['x ≤ 3','x ≥ 3','x ≤ 5','x ≥ 5'], answer: 0, explain: '3x ≤ 9 → 양수로 나눠 방향 그대로, x ≤ 3.' },
+      { q: '부등식 x + 4 &gt; 9 의 해는?', options: ['x &gt; 5','x &lt; 5','x &gt; 13','x &lt; 13'], answer: 0, explain: '4를 이항하면 x &gt; 5.' },
+      { q: '다음 중 일차부등식인 것은?', options: ['x² &gt; 4','2x − 1 ≤ 3','3 = 3','x + y &gt; 0'], answer: 1, explain: '미지수 1개·차수 1인 부등식! x²은 이차, x+y는 미지수 2개.' },
+      { q: '수직선에서 "x ≥ 2"를 바르게 나타낸 것은?', options: ['2에 ● 채운 점, 오른쪽','2에 ○ 빈 점, 오른쪽','2에서 왼쪽 채움','2에서 왼쪽 빈 점'], answer: 0, explain: '"이상"은 2를 포함 → 채운 점(●), 큰 쪽(오른쪽)!' },
+      { q: '연립방정식 x+y=5, x−y=1 의 해는?', options: ['x=3, y=2','x=2, y=3','x=4, y=1','x=1, y=4'], answer: 0, explain: '두 식을 더하면 2x=6 → x=3, y=2.' },
+      { q: '연립방정식의 풀이 방법이 아닌 것은?', options: ['가감법','대입법','그래프를 이용한 방법','인수분해'], answer: 3, explain: '인수분해는 연립방정식 풀이법이 아니야.' },
+      { q: '대입법은 어떤 방법인가?', options: ['한 식을 다른 식에 대신 넣기','더하거나 빼서 소거','그래프 그리기','이항하기'], answer: 0, explain: '한 미지수를 식으로 나타내 "대입"하는 방법!' },
+      { q: '가감법을 쓰는 목적은?', options: ['한 미지수를 소거하려고','분수를 없애려고','차수를 올리려고','그래프를 그리려고'], answer: 0, explain: '두 식을 더하거나 빼서 한 미지수를 지워!' },
+      { q: '(O/X) 연립방정식의 해는 두 식을 동시에 만족하는 값이다.', options: ['⭕ 맞다','❌ 아니다'], answer: 0, explain: '맞아! 둘 다 참이 되게 하는 (x, y)가 해.' },
+      { q: '부등식 −x ≤ −3 의 해는?', options: ['x ≥ 3','x ≤ 3','x ≥ −3','x ≤ −3'], answer: 0, explain: '양변에 −1 → 음수라 방향 바뀜, x ≥ 3.' },
+      { q: '2x + 1 &gt; x + 4 의 해는?', options: ['x &gt; 3','x &lt; 3','x &gt; 5','x &lt; 5'], answer: 0, explain: 'x를 모으면 x &gt; 3.' },
+      { q: '연립방정식 2x+y=7, y=x+1 에서 x의 값은?', options: ['x=2','x=3','x=1','x=4'], answer: 0, explain: '대입: 2x+(x+1)=7 → 3x=6 → x=2.' },
+      { q: '(O/X) 5는 부등식 x &lt; 5 의 해이다.', options: ['⭕ 맞다','❌ 아니다'], answer: 1, explain: '5는 5보다 작지 않으니 해가 아니야. X!' },
+    ],
+    '3단원': [
+      { q: '일차함수 y = 2x − 4 의 y절편은?', options: ['2','−4','4','−2'], answer: 1, explain: 'x=0을 넣으면 y=−4.' },
+      { q: 'y = −3x + 1 그래프의 모양은?', options: ['오른쪽 위로 올라간다','오른쪽 아래로 내려간다','수평선','수직선'], answer: 1, explain: '기울기 a=−3 &lt; 0이라 우하향!' },
+      { q: '일차함수 y = ax + b 에서 기울기를 나타내는 것은?', options: ['a','b','x','y'], answer: 0, explain: '기울기는 a, y절편은 b!' },
+      { q: '두 점 (0, 1), (1, 3)을 지나는 직선의 기울기는?', options: ['1','2','3','−2'], answer: 1, explain: '(y 증가)/(x 증가) = 2/1 = 2.' },
+      { q: '(O/X) 일차함수의 그래프는 항상 직선이다.', options: ['⭕ 맞다','❌ 아니다'], answer: 0, explain: '맞아! y=ax+b의 그래프는 언제나 직선.' },
+      { q: '함수의 정의로 옳은 것은?', options: ['x 하나에 y가 오직 하나 대응','x와 y가 무관','y 하나에 x가 여러 개','항상 직선이다'], answer: 0, explain: 'x 값 하나에 y 값이 단 하나 정해지면 함수!' },
+      { q: '일차함수 y = 4x 의 x절편은?', options: ['0','4','−4','1'], answer: 0, explain: 'y=0일 때 4x=0 → x=0.' },
+      { q: '기울기가 2이고 y절편이 −1인 일차함수의 식은?', options: ['y = 2x − 1','y = −x + 2','y = 2x + 1','y = x − 2'], answer: 0, explain: 'y = (기울기)x + (y절편) = 2x − 1.' },
+      { q: 'y = ax + b 에서 b가 나타내는 것은?', options: ['y절편','x절편','기울기','원점'], answer: 0, explain: 'b는 그래프가 y축과 만나는 값(y절편).' },
+      { q: 'a &lt; 0 일 때 그래프의 특징은?', options: ['오른쪽 아래로 내려간다','오른쪽 위로 올라간다','수평이다','수직이다'], answer: 0, explain: '기울기가 음수면 우하향 ↘.' },
+      { q: '두 직선 y = x + 1, y = −x + 3 의 교점의 x좌표는?', options: ['1','2','0','3'], answer: 0, explain: 'x+1 = −x+3 → 2x=2 → x=1.' },
+      { q: '(O/X) 기울기의 절댓값이 클수록 그래프는 더 가파르다.', options: ['⭕ 맞다','❌ 아니다'], answer: 0, explain: '맞아! |a|가 클수록 가팔라.' },
+      { q: '일차함수 y = 2x + 3 에서 x = 1일 때 y의 값은?', options: ['5','3','2','1'], answer: 0, explain: '2×1 + 3 = 5.' },
+      { q: '일차방정식 2x + y − 4 = 0 을 일차함수로 나타내면?', options: ['y = −2x + 4','y = 2x + 4','y = −2x − 4','y = 2x − 4'], answer: 0, explain: 'y에 대해 정리하면 y = −2x + 4.' },
+      { q: '두 일차함수의 그래프가 평행할 조건은?', options: ['기울기가 같다','y절편이 같다','교점이 1개','서로 수직'], answer: 0, explain: '기울기가 같고 y절편이 다르면 평행!' },
+    ],
+  },
+  sci: {
+    '3단원': [
+      { q: '빛이 거울에 반사될 때 입사각과 반사각의 관계는?', options: ['입사각 &gt; 반사각','입사각 = 반사각','입사각 &lt; 반사각','관계없다'], answer: 1, explain: '반사 법칙! 법선 기준 입사각=반사각.' },
+      { q: '빛이 공기에서 물로 비스듬히 들어갈 때 일어나는 현상은?', options: ['직진','반사','굴절','소멸'], answer: 2, explain: '매질이 바뀌면 속도가 달라져 꺾인다 → 굴절!' },
+      { q: '(O/X) 소리는 진공(매질이 없는 곳)에서도 잘 전달된다.', options: ['⭕ 맞다','❌ 아니다'], answer: 1, explain: '소리는 매질이 필요해 진공에선 전달 안 돼. X!' },
+      { q: '빛이 굴절하는 까닭으로 알맞은 것은?', options: ['빛의 색이 변해서','매질에 따라 빛의 속도가 달라서','온도가 높아서','거울이 있어서'], answer: 1, explain: '매질이 바뀌면 빛의 속도가 달라져 굴절해.' },
+      { q: '(O/X) 볼록 렌즈는 빛을 한 점으로 모은다.', options: ['⭕ 맞다','❌ 아니다'], answer: 0, explain: '맞아! 볼록=수렴(모음), 오목=발산(퍼뜨림).' },
+      { q: '소리의 높낮이를 결정하는 것은?', options: ['진폭','진동수','파형','온도'], answer: 1, explain: '진동수↑ 높은 소리. 진폭=크기, 파형=음색.' },
+      { q: '소리의 크기를 결정하는 것은?', options: ['진폭','진동수','파형','매질'], answer: 0, explain: '진폭이 클수록 큰 소리!' },
+      { q: '빛의 직진을 보여 주는 현상은?', options: ['그림자','무지개','신기루','물속 젓가락이 휘어 보임'], answer: 0, explain: '빛이 곧게 나아가 막히면 그림자가 생겨.' },
+      { q: '오목 렌즈의 특징으로 옳은 것은?', options: ['빛을 퍼뜨린다(발산)','빛을 한 점에 모은다','항상 실상만 만든다','빛을 흡수한다'], answer: 0, explain: '오목 렌즈는 빛을 발산시켜.' },
+      { q: '파동에서 매질은 어떻게 움직이나?', options: ['제자리에서 진동','파동과 함께 멀리 이동','사라진다','빛처럼 직진'], answer: 0, explain: '매질은 제자리 진동, 에너지만 전달!' },
+      { q: '음색(소리의 맵시)을 결정하는 것은?', options: ['파형','진폭','진동수','속도'], answer: 0, explain: '파형이 다르면 음색(맵시)이 달라.' },
+      { q: '(O/X) 빛은 진공에서도 전달된다.', options: ['⭕ 맞다','❌ 아니다'], answer: 0, explain: '맞아! 빛은 매질이 없어도 전달돼(소리와 달라).' },
+      { q: '거울에서 입사각이 30°이면 반사각은?', options: ['30°','60°','90°','15°'], answer: 0, explain: '입사각=반사각이므로 30°.' },
+      { q: '무지개가 생기는 주된 원리는?', options: ['빛의 굴절·분산','반사만으로','직진만으로','흡수'], answer: 0, explain: '물방울에서 빛이 굴절·분산되어 색이 나뉨.' },
+      { q: '파동이 전달하는 것은?', options: ['에너지','매질 자체','소리의 색','온도만'], answer: 0, explain: '파동은 매질을 통해 에너지를 전달해.' },
+    ],
+    '4단원': [
+      { q: '원자가 전자를 잃으면 무엇이 될까?', options: ['음이온','양이온','분자','원소'], answer: 1, explain: '(−)전자를 잃으면 (+) → 양이온!' },
+      { q: '원소와 기호가 바르게 짝지어진 것은?', options: ['수소 — He','산소 — O','탄소 — Na','질소 — K'], answer: 1, explain: '산소 O. He=헬륨, Na=나트륨, K=칼륨.' },
+      { q: '물(H₂O) 분자 한 개를 이루는 원자는 모두 몇 개?', options: ['1개','2개','3개','4개'], answer: 2, explain: '수소 2 + 산소 1 = 3개!' },
+      { q: '"분자"에 대한 설명으로 옳은 것은?', options: ['더 못 쪼개는 성분','물질의 성질을 지닌 가장 작은 입자','전하를 띤 입자','금속만 가리킴'], answer: 1, explain: '분자=물질의 성질을 가진 가장 작은 입자.' },
+      { q: '원소란 무엇인가?', options: ['더 이상 분해되지 않는 기본 성분','원자의 핵','전하를 띤 입자','물질의 상태'], answer: 0, explain: '원소=물질을 이루는 기본 성분(산소, 수소 등).' },
+      { q: '원자의 구성으로 옳은 것은?', options: ['(+)원자핵과 (−)전자','(+)전자와 (−)핵','중성자만으로','분자 여러 개로'], answer: 0, explain: '원자는 (+)핵과 (−)전자로 이루어져.' },
+      { q: '원자가 전자를 얻으면 무엇이 되나?', options: ['양이온','음이온','원소','분자'], answer: 1, explain: '전자를 얻으면 (−) → 음이온!' },
+      { q: '나트륨의 원소 기호는?', options: ['N','Na','K','Ne'], answer: 1, explain: '나트륨 = Na (라틴어 기반).' },
+      { q: '다음 중 양이온인 것은?', options: ['Na⁺','Cl⁻','OH⁻','O²⁻'], answer: 0, explain: '+ 기호가 양이온! Na⁺.' },
+      { q: '은 이온과 염화 이온이 만나면 생기는 앙금의 색은?', options: ['흰색','노란색','검은색','파란색'], answer: 0, explain: '염화 은(AgCl)은 흰색 앙금.' },
+      { q: '(O/X) 같은 원소의 원자는 같은 원소 기호로 나타낸다.', options: ['⭕ 맞다','❌ 아니다'], answer: 0, explain: '맞아! 같은 원소면 같은 기호.' },
+      { q: '분자 모형에서 색과 크기로 나타내는 것은?', options: ['원자의 종류와 개수','온도','무게만','색깔만'], answer: 0, explain: '원자의 종류·개수를 색·크기로 표현해.' },
+      { q: '탄소의 원소 기호는?', options: ['C','Ca','Co','Cl'], answer: 0, explain: '탄소 = C.' },
+      { q: '이온이 전하를 띠는 까닭은?', options: ['전자를 잃거나 얻어서','핵이 깨져서','색이 달라서','무거워서'], answer: 0, explain: '전자 수가 달라져 전하를 띤 입자가 이온!' },
+      { q: '(O/X) 앙금은 물에 잘 녹지 않는 물질이다.', options: ['⭕ 맞다','❌ 아니다'], answer: 0, explain: '맞아! 앙금은 물에 녹지 않아 가라앉아.' },
+    ],
+  },
+  eng: {
+    'Lesson 3': [
+      { q: '현재완료 시제의 형태로 옳은 것은?', options: ['will + 동사원형','have/has + 과거분사','be + 동사-ing','did + 동사원형'], answer: 1, explain: '현재완료 = have/has + 과거분사(p.p.)!' },
+      { q: 'Have you ever ___ Jeju? 빈칸에 알맞은 것은?', options: ['visit','visited','visiting','visits'], answer: 1, explain: '현재완료라 과거분사 visited.' },
+      { q: '동명사가 주어로 쓰인 문장은?', options: ['I like swim.','Swimming is fun.','I am swim.','Swim good.'], answer: 1, explain: 'Swimming(동사+ing)이 주어! 동명사는 명사 역할.' },
+      { q: '동명사를 목적어로 바르게 쓴 문장은?', options: ['I enjoy cooking.','I want to go.','I am happy.','I will run.'], answer: 0, explain: 'enjoy는 동명사를 목적어로! enjoy cooking.' },
+      { q: '현재완료 "계속"에서 since 다음에 오는 것은?', options: ['시점','기간','장소','이유'], answer: 0, explain: 'since + 시점 (since 2020).' },
+      { q: 'for 다음에 오는 것은?', options: ['기간','시점','장소','이유'], answer: 0, explain: 'for + 기간 (for 3 years).' },
+      { q: '동명사는 무엇처럼 쓰이나?', options: ['명사','형용사','부사','감탄사'], answer: 0, explain: '동명사(동사+ing)는 명사처럼 쓰여.' },
+      { q: '(O/X) 현재완료는 "have/has + 동사원형"이다.', options: ['⭕ 맞다','❌ 아니다'], answer: 1, explain: '동사원형이 아니라 "과거분사"! 그래서 X.' },
+      { q: 'My hobby is ___. (보어 자리) 빈칸은?', options: ['reading','read','reads','ride'], answer: 0, explain: '보어 자리에 동명사 reading.' },
+      { q: 'I have ___ my homework. (완료) 빈칸은?', options: ['finish','finished','finishing','finishes'], answer: 1, explain: '현재완료라 과거분사 finished.' },
+      { q: 'How about ___ a movie? (제안) 빈칸은?', options: ['watch','watching','watched','to watch'], answer: 1, explain: 'How about + 동명사(watching)!' },
+      { q: '경험을 나타내는 신호어로 알맞은 것은?', options: ['ever / never','just','since','will'], answer: 0, explain: '경험엔 ever, never가 자주 와.' },
+      { q: 'I have known him ___ 2018. 빈칸은?', options: ['for','since','during','at'], answer: 1, explain: '시점(2018) 앞엔 since!' },
+      { q: '제안하는 표현으로 알맞은 것은?', options: ['Why don’t we go?','Thank you.','I am fine.','How old are you?'], answer: 0, explain: 'Why don’t we …? = 제안하기.' },
+      { q: '(O/X) "enjoy" 뒤에는 동명사를 쓴다.', options: ['⭕ 맞다','❌ 아니다'], answer: 0, explain: '맞아! enjoy + 동명사.' },
+    ],
+    'Lesson 4': [
+      { q: 'I have a friend ___ speaks French. (사람 주격) 빈칸은?', options: ['who','whom','which','where'], answer: 0, explain: '사람 + 주격 → who!' },
+      { q: 'I have a book ___ is interesting. (사물 주격) 빈칸은?', options: ['who','which','whom','where'], answer: 1, explain: '사물 + 주격 → which(또는 that).' },
+      { q: '시간 접속사 "before"의 뜻은?', options: ['~한 후에','~하기 전에','~할 때','~때문에'], answer: 1, explain: 'before = ~하기 전에.' },
+      { q: 'Wash your hands ___ you eat. (먹기 전에) 빈칸은?', options: ['after','before','when','because'], answer: 1, explain: '~하기 전에 → before.' },
+      { q: '접속사 "when"의 뜻은?', options: ['~할 때','~전에','~후에','~지만'], answer: 0, explain: 'when = ~할 때.' },
+      { q: '충고하는 표현으로 알맞은 것은?', options: ['You should exercise.','Thank you.','Nice to meet you.','How are you?'], answer: 0, explain: '충고는 You should …!' },
+      { q: '허락을 구하는 표현으로 알맞은 것은?', options: ['May I come in?','I am sorry.','Good job.','See you.'], answer: 0, explain: '허락은 May I …? / Can I …?' },
+      { q: '주격 관계대명사로 사람·사물 모두 쓸 수 있는 것은?', options: ['that','who','which','whom'], answer: 0, explain: 'that은 사람·사물 모두 OK!' },
+      { q: '접속사 "after"의 뜻은?', options: ['~후에','~전에','~할 때','~동안'], answer: 0, explain: 'after = ~한 후에.' },
+      { q: 'The boy ___ is running is my brother. 빈칸은?', options: ['who','which','what','where'], answer: 0, explain: '사람(boy) + 주격 → who.' },
+      { q: '(O/X) 주격 관계대명사 뒤에는 동사가 온다.', options: ['⭕ 맞다','❌ 아니다'], answer: 0, explain: '맞아! 주격 관계대명사 뒤엔 동사가 와.' },
+      { q: '___ I open the window? (허락 구하기) 빈칸은?', options: ['May','Must','Should','Will'], answer: 0, explain: '허락은 May I …?' },
+      { q: 'Brush your teeth ___ you go to bed. (자기 전에) 빈칸은?', options: ['after','before','because','that'], answer: 1, explain: '자기 전에 → before.' },
+      { q: '"You’d better take a rest"의 의미 기능은?', options: ['충고','감사','사과','거절'], answer: 0, explain: 'You’d better … = 강한 충고.' },
+      { q: '관계대명사가 꾸며 주는 앞의 말을 무엇이라 하나?', options: ['선행사','주어','보어','목적어'], answer: 0, explain: '꾸밈을 받는 앞 명사 = 선행사!' },
+    ],
+  },
+  kor: {
+    '3단원': [
+      { q: '구체적인 예를 드는 설명 방법은?', options: ['정의','예시','비교','분류'], answer: 1, explain: '예를 들어 설명 → 예시.' },
+      { q: '두 대상의 "차이점"을 중심으로 하는 설명 방법은?', options: ['비교','대조','분석','인과'], answer: 1, explain: '차이점=대조, 공통점=비교!' },
+      { q: '두 대상의 "공통점"을 중심으로 하는 설명 방법은?', options: ['비교','대조','분석','예시'], answer: 0, explain: '공통점=비교!' },
+      { q: '일정한 기준에 따라 묶어 설명하는 방법은?', options: ['분류','분석','정의','인과'], answer: 0, explain: '묶기=분류, 쪼개기=분석.' },
+      { q: '대상을 구성 요소로 나누어 설명하는 방법은?', options: ['분석','분류','정의','예시'], answer: 0, explain: '쪼개기=분석.' },
+      { q: '원인과 결과로 설명하는 방법은?', options: ['인과','비교','정의','예시'], answer: 0, explain: '원인-결과 → 인과.' },
+      { q: '대상의 뜻을 밝혀 설명하는 방법은?', options: ['정의','예시','분류','대조'], answer: 0, explain: '뜻을 밝힘 → 정의.' },
+      { q: '(O/X) 설명하는 글은 정보를 정확·객관적으로 전달하는 것이 목적이다.', options: ['⭕ 맞다','❌ 아니다'], answer: 0, explain: '맞아! 설명문은 정확·객관적 정보 전달.' },
+      { q: '설명문을 읽을 때 가장 중요한 것은?', options: ['설명 방법과 내용 파악','운율 느끼기','인물 감정 상상','운문 형식 분석'], answer: 0, explain: '어떤 방법으로 무엇을 설명하는지 파악!' },
+      { q: '설명하는 글을 쓸 때 먼저 할 일은?', options: ['주제·목적 정하기','결론부터 쓰기','비유 넣기','운율 맞추기'], answer: 0, explain: '무엇을 왜 설명할지(주제·목적)부터!' },
+      { q: '"고래는 새끼를 낳는 포유류이다"는 어떤 설명 방법에 가까운가?', options: ['정의','예시','인과','대조'], answer: 0, explain: '대상의 뜻을 밝히는 정의에 가까워.' },
+      { q: '(O/X) 비교와 대조는 같은 설명 방법이다.', options: ['⭕ 맞다','❌ 아니다'], answer: 1, explain: '비교=공통점, 대조=차이점! 달라서 X.' },
+      { q: '여러 종류를 기준에 따라 나눌 때 쓰는 방법은?', options: ['분류','인과','정의','예시'], answer: 0, explain: '기준에 따라 묶고 나눔 → 분류.' },
+      { q: '설명하는 글의 짜임으로 알맞은 것은?', options: ['처음 - 중간 - 끝','발단 - 전개 - 결말','기 - 승 - 전 - 결','행 - 연 구성'], answer: 0, explain: '설명문은 처음-중간-끝 구성.' },
+      { q: '설명 대상의 정보가 정확해야 하는 까닭은?', options: ['독자의 이해를 돕기 위해','재미를 위해','운율을 위해','분량을 늘리려고'], answer: 0, explain: '정확한 정보라야 독자가 바르게 이해해.' },
+    ],
+    '4단원': [
+      { q: '속마음과 반대로 표현해 의도를 강조하는 것은?', options: ['역설','반어','은유','상징'], answer: 1, explain: '반대로 말해 강조 → 반어.' },
+      { q: '겉으로 모순돼 보이지만 속에 진리를 담은 표현은?', options: ['반어','역설','직유','은유'], answer: 1, explain: '모순 속 진리 → 역설.' },
+      { q: '(O/X) 반어는 모순된 표현 속에 진리를 담는다.', options: ['⭕ 맞다','❌ 아니다'], answer: 1, explain: '그건 역설! 반어는 속뜻과 반대로 말하기. X.' },
+      { q: '양반전에서 두드러지는 표현 방법은?', options: ['풍자','직유','반복','대구'], answer: 0, explain: '양반의 위선을 비웃는 풍자.' },
+      { q: '대상을 우스꽝스럽게 비틀어 비판하는 것은?', options: ['풍자','비유','운율','상징'], answer: 0, explain: '웃기면서 비판 → 풍자.' },
+      { q: '"찬란한 슬픔"은 어떤 표현인가?', options: ['역설','반어','직유','의인'], answer: 0, explain: '모순 속 진리 → 역설.' },
+      { q: '잘못한 친구에게 "참 잘했다!"라고 비꼬는 것은?', options: ['반어','역설','은유','상징'], answer: 0, explain: '속뜻과 반대로 말함 → 반어.' },
+      { q: '풍자의 주된 목적은?', options: ['현실·대상 비판','정보 전달','운율 형성','객관적 설명'], answer: 0, explain: '웃음 속에 비판을 담는 게 풍자.' },
+      { q: '영상 매체 자료를 만들 때 가장 먼저 할 일은?', options: ['주제·목적 정하기','촬영하기','편집하기','업로드하기'], answer: 0, explain: '무엇을 왜 만들지부터 정해!' },
+      { q: '영상 제작 순서로 알맞은 것은?', options: ['기획 → 촬영 → 편집','촬영 → 기획 → 편집','편집 → 촬영 → 기획','업로드 → 촬영 → 기획'], answer: 0, explain: '기획하고 찍고 편집!' },
+      { q: '(O/X) 풍자는 대상을 직접 칭찬하는 표현이다.', options: ['⭕ 맞다','❌ 아니다'], answer: 1, explain: '풍자는 비판! 칭찬이 아니라 X.' },
+      { q: '반어와 역설의 공통점으로 알맞은 것은?', options: ['표현의 효과를 높인다','운율을 만든다','설명을 돕는다','정보를 준다'], answer: 0, explain: '둘 다 의미를 강조해 인상을 높여.' },
+      { q: '시에서 반어·역설을 쓰는 까닭은?', options: ['의미를 강조하고 인상 깊게 하려고','길이를 늘리려고','설명하려고','객관성을 위해'], answer: 0, explain: '강조와 깊은 인상을 위해 써.' },
+      { q: '영상 매체의 특징으로 알맞은 것은?', options: ['이미지·소리로 전달','글자만 사용','향기로 전달','촉각으로 전달'], answer: 0, explain: '영상은 이미지와 소리로 내용을 전달해.' },
+      { q: '"소리 없는 아우성"은 어떤 표현인가?', options: ['역설','직유','반어','대구'], answer: 0, explain: '모순된 말 속 진리 → 역설.' },
+    ],
+  },
+  tech: {
+    '1단원': [
+      { q: '청소년기에 "나는 누구인가"를 고민하며 형성하는 것은?', options: ['자아 정체성','소득','참정권','기초대사량'], answer: 0, explain: '자기를 이해·수용하는 자아 정체성!' },
+      { q: '청소년기에 나타나는 변화로 보기 어려운 것은?', options: ['신체적 성장','2차 성징','정서 변화','노화'], answer: 3, explain: '노화는 청소년기 특징이 아니야.' },
+      { q: '(O/X) 건강한 성 가치관은 성에 대한 올바른 이해와 책임 있는 태도를 포함한다.', options: ['⭕ 맞다','❌ 아니다'], answer: 0, explain: '맞아! 올바른 이해와 책임이 핵심.' },
+      { q: '스마트폰·게임 등에 빠져 일상에 지장을 주는 상태는?', options: ['중독','성장','자립','표준화'], answer: 0, explain: '조절이 안 되는 상태 = 중독.' },
+    ],
+    '2단원': [
+      { q: '청소년기에 균형 잡힌 영양이 특히 중요한 까닭은?', options: ['성장·발달이 활발해서','잠을 줄이려고','돈을 아끼려고','운동을 피하려고'], answer: 0, explain: '몸과 뇌가 빠르게 자라는 시기라서!' },
+      { q: '균형 잡힌 식사를 위한 영양소가 아닌 것은?', options: ['탄수화물','단백질','지방','농약'], answer: 3, explain: '농약은 영양소가 아니야!' },
+      { q: '옷차림의 기능으로 알맞은 것은?', options: ['자기 표현과 상황 적합','영양 공급','소리 차단','정보 전달'], answer: 0, explain: '옷차림은 자기표현·상황 적합이 중요!' },
+      { q: '(O/X) 친환경 의생활은 옷을 오래 입고 재활용하는 것을 포함한다.', options: ['⭕ 맞다','❌ 아니다'], answer: 0, explain: '맞아! 지속가능한 의생활이야.' },
+    ],
+    '3단원': [
+      { q: '시간·돈·물자처럼 생활에 쓰이는 것을 무엇이라 하나?', options: ['생활 자원','표준','발명','앙금'], answer: 0, explain: '생활에 쓰이는 자원 = 생활 자원.' },
+      { q: '(O/X) 지속가능한 소비는 자원을 아끼고 환경을 생각하는 소비다.', options: ['⭕ 맞다','❌ 아니다'], answer: 0, explain: '맞아! 환경과 미래를 고려한 소비.' },
+      { q: '디지털 생활환경의 변화로 알맞은 것은?', options: ['온라인으로 일상 처리 증가','자원이 무한해짐','소비가 불필요해짐','정보가 줄어듦'], answer: 0, explain: '온라인으로 처리하는 일이 늘었어.' },
+      { q: '합리적인 소비를 위한 태도는?', options: ['필요와 예산을 따져 선택','충동구매','무조건 비싼 것','광고만 믿기'], answer: 0, explain: '필요·예산을 따져 고르는 게 합리적 소비!' },
+    ],
+    '4단원': [
+      { q: '기술적 문제 해결 과정의 순서로 알맞은 것은?', options: ['실현→설계→평가→인식','문제 인식→설계→실현→평가','평가→실현→설계→인식','설계→인식→평가→실현'], answer: 1, explain: '인식 → 설계 → 실현 → 평가! "인설실평"' },
+      { q: '(O/X) 표준화는 규격을 통일해 호환성·생산 효율을 높인다.', options: ['⭕ 맞다','❌ 아니다'], answer: 0, explain: '맞아! 표준화의 핵심 장점.' },
+      { q: '특허·저작권처럼 아이디어를 보호하는 권리는?', options: ['지식 재산권','소유권','참정권','생존권'], answer: 0, explain: '아이디어·창작 보호 → 지식 재산권.' },
+      { q: '그 지역의 환경·자원에 맞춘 기술은?', options: ['적정기술','첨단기술','표준기술','자동기술'], answer: 0, explain: '지역에 알맞은 기술 = 적정기술.' },
+    ],
+    '5단원': [
+      { q: '구상한 것을 도면으로 나타내는 과정은?', options: ['제도','평가','폐기','홍보'], answer: 0, explain: '도면으로 표현 = 제도.' },
+      { q: '(O/X) 재료마다 특성이 달라 쓰임에 맞게 골라 가공한다.', options: ['⭕ 맞다','❌ 아니다'], answer: 0, explain: '맞아! 재료 특성에 맞게 선택·가공.' },
+      { q: '제품 개발의 마지막 단계로 알맞은 것은?', options: ['창의적인 제품 만들기(실현)','주제 정하기','자료 조사','설계'], answer: 0, explain: '구상·설계 뒤 실제로 만드는 단계!' },
+      { q: '기존 제품의 불편함을 개선하는 발명 방법으로 알맞은 것은?', options: ['더하기·빼기 등 발명 기법 활용','무조건 새로 만들기','그대로 베끼기','사용을 포기하기'], answer: 0, explain: '더하기·빼기·모양 바꾸기로 개선!' },
+    ],
+  },
+};
+
+const quizScore = {};
+let todayQuiz = {};
+// 평일 5문항 / 주말(토·일) 7문항
+function dailyN() {
+  const d = new Date().getDay(); // 0=일, 6=토
+  return (d === 0 || d === 6) ? 7 : 5;
+}
+
+// 날짜 인덱스 (하루에 1씩 증가) — 매일 다른 문제 세트의 기준
+function dayIndex() {
+  const ref = new Date(2026, 0, 1); ref.setHours(0, 0, 0, 0);
+  const t = new Date(); t.setHours(0, 0, 0, 0);
+  return Math.round((t - ref) / 86400000);
+}
+// 결정적 난수 (같은 날엔 같은 결과, 날이 바뀌면 달라짐)
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+// 단원별 문제를 번갈아 섞어 하나의 과목 은행으로 (윈도가 여러 단원에 걸치도록)
+function flattenBank(subj) {
+  const units = Object.values(QUIZ[subj]);
+  const maxLen = Math.max(...units.map(u => u.length));
+  const flat = [];
+  for (let i = 0; i < maxLen; i++) for (const u of units) if (i < u.length) flat.push(u[i]);
+  return flat;
+}
+function bankSize(subj) {
+  return Object.values(QUIZ[subj]).reduce((s, u) => s + u.length, 0);
+}
+// 오늘의 문제 세트 만들기: 날짜 기준으로 골라 보기 순서까지 섞기
+function buildDailyQuiz() {
+  const seed = dayIndex();
+  const N = dailyN();
+  todayQuiz = {};
+  Object.keys(QUIZ).forEach((subj, si) => {
+    const bank = flattenBank(subj);
+    const L = bank.length;
+    const start = ((seed + si) % L + L) % L;
+    const picked = [];
+    for (let k = 0; k < Math.min(N, L); k++) picked.push(bank[(start + k) % L]);
+    todayQuiz[subj] = picked.map((q, qi) => {
+      const rng = mulberry32(seed * 131 + si * 17 + qi * 7 + 1);
+      const order = q.options.map((_, i) => i);
+      for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        const tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+      }
+      return {
+        q: q.q,
+        options: order.map(i => q.options[i]),
+        answer: order.indexOf(q.answer),
+        explain: q.explain,
+      };
+    });
+  });
+}
+
+function quizHTML(subj) {
+  const arr = todayQuiz[subj] || [];
+  let h = `<div class="quiz-teacher">🧑‍🏫 ${TEACHER[subj].quiz}</div>`;
+  h += `<div class="quiz-daily">📅 오늘의 ${arr.length}문제 · 평일 5 / 주말 7 · 매일 자동 변경 (은행 ${bankSize(subj)}문항)</div>`;
+  arr.forEach((q, qi) => {
+    const opts = q.options.map((o, oi) =>
+      `<button class="quiz-opt" onclick="answerQuiz('${subj}',${qi},${oi})">${o}</button>`
+    ).join('');
+    h += `
+      <div class="quiz-q" id="qz-${subj}-${qi}">
+        <div class="quiz-qtext">${qi+1}. ${q.q}</div>
+        <div class="quiz-opts">${opts}</div>
+        <div class="quiz-explain" id="ex-${subj}-${qi}"></div>
+      </div>`;
+  });
+  h += `<div class="quiz-score" id="score-${subj}">맞힌 개수: 0 / 0 (오늘 ${arr.length}문항)</div>`;
+  return h;
+}
+
+function answerQuiz(subj, qi, oi) {
+  const key = subj + '-' + qi;
+  if (!quizScore[subj]) quizScore[subj] = { right: 0, done: 0, ans: {} };
+  if (quizScore[subj].ans[qi]) return; // 이미 푼 문제
+  quizScore[subj].ans[qi] = true;
+  const q = todayQuiz[subj][qi];
+  const correct = (oi === q.answer);
+  const wrap = document.getElementById('qz-' + key);
+  const opts = wrap.querySelectorAll('.quiz-opt');
+  opts.forEach((el, idx) => {
+    if (idx === q.answer) el.classList.add('correct');
+    else if (idx === oi) el.classList.add('wrong');
+    el.style.pointerEvents = 'none';
+  });
+  const ex = document.getElementById('ex-' + key);
+  ex.style.display = 'block';
+  ex.innerHTML = (correct ? '⭕ 정답! ' : '❌ 아쉬워요. ') + q.explain;
+  quizScore[subj].done++;
+  if (correct) quizScore[subj].right++;
+  const sc = document.getElementById('score-' + subj);
+  if (sc) sc.textContent = `맞힌 개수: ${quizScore[subj].right} / ${quizScore[subj].done} (오늘 ${todayQuiz[subj].length}문항)`;
+
+  // 영구 저장 (날짜별)
+  const dk = todayKey();
+  if (!quizLog[dk]) quizLog[dk] = {};
+  if (!quizLog[dk][subj]) quizLog[dk][subj] = { answers: {}, right: 0, done: 0, total: todayQuiz[subj].length };
+  const rec = quizLog[dk][subj];
+  rec.answers[qi] = { c: oi, ok: correct };
+  rec.done = Object.keys(rec.answers).length;
+  rec.right = Object.values(rec.answers).filter(a => a.ok).length;
+  rec.total = todayQuiz[subj].length;
+  saveQuizLog();
+  schedulePush();
+}
+
+// 다시 접속했을 때 "오늘" 푼 문제 상태를 복원 (휘발 방지)
+function restoreTodayQuiz() {
+  const dk = todayKey();
+  const day = quizLog[dk];
+  if (!day) return;
+  Object.keys(day).forEach(subj => {
+    if (!todayQuiz[subj]) return;
+    const rec = day[subj];
+    if (!quizScore[subj]) quizScore[subj] = { right: 0, done: 0, ans: {} };
+    Object.keys(rec.answers).forEach(qiStr => {
+      const qi = +qiStr;
+      const q = todayQuiz[subj][qi];
+      const wrap = document.getElementById('qz-' + subj + '-' + qi);
+      if (!q || !wrap) return;
+      const a = rec.answers[qiStr];
+      wrap.querySelectorAll('.quiz-opt').forEach((el, idx) => {
+        if (idx === q.answer) el.classList.add('correct');
+        else if (idx === a.c) el.classList.add('wrong');
+        el.style.pointerEvents = 'none';
+      });
+      const ex = document.getElementById('ex-' + subj + '-' + qi);
+      if (ex) { ex.style.display = 'block'; ex.innerHTML = (a.ok ? '⭕ 정답! ' : '❌ 아쉬워요. ') + q.explain; }
+      if (!quizScore[subj].ans[qi]) {
+        quizScore[subj].ans[qi] = true;
+        quizScore[subj].done++;
+        if (a.ok) quizScore[subj].right++;
+      }
+    });
+    const sc = document.getElementById('score-' + subj);
+    if (sc) sc.textContent = `맞힌 개수: ${quizScore[subj].right} / ${quizScore[subj].done} (오늘 ${todayQuiz[subj].length}문항)`;
+  });
+}
+
+// 암기 팁 (두문자·연상법)
+const TIPS = {
+  math: [
+    ['음수 부등호', '음수로 곱하거나 나누면 부등호 방향이 뒤집힌다! "음수 만나면 부등호도 돌아선다" 🔄'],
+    ['y = ax + b', 'a는 "비탈(기울기)", b는 "출발점(y절편)". a 먼저 보고 기울기, b는 y축 출발점!'],
+    ['그래프 방향', 'a &gt; 0 올라가 ↗ / a &lt; 0 내려가 ↘. 부호만 봐도 방향 끝!'],
+    ['연립 풀이법', '가감법 = 더하거나 빼서 지우기, 대입법 = 대신 넣기. 이름에 방법이 들어있어!'],
+  ],
+  sci: [
+    ['금속 원소 기호', '나트륨 Na · 칼륨 K · 철 Fe · 구리 Cu 는 영어와 달라(라틴어)! "나·칼·철·구리는 별종" 으로 따로 외우기'],
+    ['이온 부호', '전자를 잃으면 +(양이온), 얻으면 −(음이온) → "잃플(잃으면 plus), 얻마(얻으면 minus)"'],
+    ['앙금 색', '은+염화 → 하얀 앙금(AgCl) · 바륨+황산 → 하얀 앙금(BaSO₄) · 납+아이오딘 → 노란 앙금(PbI₂)'],
+    ['(불꽃 반응이 범위면)', '리튬 빨강 · 나트륨 노랑 · 칼륨 보라 · 구리 청록 → "리빨·나노·칼보·구청"'],
+  ],
+  eng: [
+    ['현재완료 4용법', '경험·완료·계속·결과 → 두문자 "경완계결"! (경험=ever/never, 완료=just/already/yet)'],
+    ['for vs since', '계속을 말할 때 for + 기간(3 years), since + 시점(2020). "for기간, since시점"'],
+    ['관계대명사', '사람 who · 사물/동물 which · 둘 다 that → "사who 물which 공통that"'],
+    ['동명사', '동사+ing가 명사로 변신! 주어·보어·목적어 자리 모두 OK. "ing 붙이면 명사"'],
+  ],
+  kor: [
+    ['헷갈리는 짝', '비교=공통점, 대조=차이점 / 분류=묶기, 분석=쪼개기. 짝으로 외우면 안 헷갈려!'],
+    ['반어 vs 역설', '반대로 말하면 반어, 모순인데 진리면 역설. (반=반대, 역=거꾸로지만 진리)'],
+    ['풍자', '웃기면서 콕 찌르기 = 풍자. 양반전이 대표! "웃으며 비판"'],
+    ['설명 7방법 첫 글자', '정의·예시·비교·대조·분류·분석·인과 → "정예비대 분·분·인"'],
+  ],
+  tech: [
+    ['문제 해결 4단계', '인식 → 설계 → 실현 → 평가 → 두문자 "인설실평"! "인식하고 설계해 실현하고 평가"'],
+    ['적정기술 예시', '큐드럼(물 운반) · 라이프스트로(정수 빨대) · 항아리 냉장고 → "큐·라·항"'],
+    ['지식 재산권', '특허·실용신안·디자인·상표 + 저작권. "특·실·디·상"으로 묶어 외우기'],
+    ['청소년기 1단원', '정체성·건강·성 가치관·또래 관계·중독 예방 — 핵심 키워드 5개로 묶어 기억!'],
+  ],
+};
+
+function renderTodayFocus() {
+  const el = document.getElementById('todayFocus');
+  if (!el) return;
+  const all = WEEK1.concat(WEEK2);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const td = all.find(d => parseDayDate(d.date).getTime() === today.getTime());
+  const now = new Date();
+  const ds = (now.getMonth() + 1) + '월 ' + now.getDate() + '일';
+  if (!td) {
+    el.innerHTML = `<div class="today-focus"><div class="tf-h">📅 오늘 (${ds})</div><div class="tf-body">오늘은 시험 계획표 범위 밖이에요. 아래 개념 중 약한 부분을 자유롭게 복습해 보자!</div></div>`;
+    return;
+  }
+  const items = td.tasks.filter(t => t.subj).map(t => {
+    const s = subjMap[t.subj];
+    return `<div class="tf-item"><span class="task-subject ${s.cls}">${s.label}</span><span>${t.text}</span></div>`;
+  }).join('');
+  const examNote = td.exam ? '<div class="tf-exam">📝 오늘은 시험일! 새 내용보다 가볍게 점검하고 컨디션 챙기기</div>' : '';
+  el.innerHTML = `<div class="today-focus"><div class="tf-h">📅 오늘 (${ds}) 집중 개념</div>${examNote}<div class="tf-body">${items || '오늘은 정리·휴식 위주의 날! 아래 개념으로 약한 부분만 보충하자.'}</div></div>`;
+}
+
+function renderConcepts() {
+  buildDailyQuiz();
+  const c = document.getElementById('conceptList');
+  c.innerHTML = '';
+  CONCEPTS.forEach((s, si) => {
+    const label = subjMap[s.subj].label;
+    const col = conceptColor[s.subj];
+    c.innerHTML += `<div class="concept-subj" style="color:${col}">● ${label}</div>`;
+    if (TEACHER[s.subj]) {
+      c.innerHTML += `<div class="teacher-intro">🧑‍🏫 ${TEACHER[s.subj].intro}</div>`;
+    }
+    s.units.forEach((u, ui) => {
+      const id = `cc-${si}-${ui}`;
+      const items = u.items.map(it => `
+        <div class="concept-item">
+          <div class="concept-k">${it[0]}</div>
+          <div class="concept-v">${it[1]}</div>
+        </div>`).join('');
+      c.innerHTML += `
+        <div class="concept-card" id="${id}">
+          <div class="concept-head" onclick="toggleConcept('${id}')">
+            <span>${u.name}</span><span class="arrow">▶</span>
+          </div>
+          <div class="concept-body">${items}</div>
+        </div>`;
+    });
+    if (VISUALS[s.subj]) {
+      const vid = `vis-${si}`;
+      c.innerHTML += `
+        <div class="concept-card" id="${vid}">
+          <div class="concept-head" onclick="toggleConcept('${vid}')">
+            <span>🖼️ 그림·표로 보기</span><span class="arrow">▶</span>
+          </div>
+          <div class="concept-body">${VISUALS[s.subj]}</div>
+        </div>`;
+    }
+    if (TIPS[s.subj]) {
+      const tid = `tip-${si}`;
+      const tipItems = TIPS[s.subj].map(t => `
+        <div class="concept-item">
+          <div class="concept-k">💡 ${t[0]}</div>
+          <div class="concept-v">${t[1]}</div>
+        </div>`).join('');
+      c.innerHTML += `
+        <div class="concept-card" id="${tid}">
+          <div class="concept-head" onclick="toggleConcept('${tid}')">
+            <span>💡 암기 팁</span><span class="arrow">▶</span>
+          </div>
+          <div class="concept-body">${tipItems}</div>
+        </div>`;
+    }
+    if (QUIZ[s.subj]) {
+      const qid = `quiz-${si}`;
+      c.innerHTML += `
+        <div class="concept-card" id="${qid}">
+          <div class="concept-head" onclick="toggleConcept('${qid}')">
+            <span>✏️ ${label} 선생님의 확인 문제 (${todayQuiz[s.subj].length})</span><span class="arrow">▶</span>
+          </div>
+          <div class="concept-body">${quizHTML(s.subj)}</div>
+        </div>`;
+    }
+  });
+  restoreTodayQuiz();
+}
+
+function toggleConcept(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+// ───────────────────────────────
+// RECORD (기록) — 영구 저장된 공부 기록 보기
+// ───────────────────────────────
+function renderRecord() {
+  renderSyncUI();
+  const all = WEEK1.concat(WEEK2);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+
+  // 요약 통계
+  let totalDone = 0, totalTasks = 0, studyDays = 0, quizAnswered = 0, quizRight = 0;
+  all.forEach(d => {
+    const done = d.tasks.filter(t => checked[t.id]).length;
+    totalDone += done; totalTasks += d.tasks.length;
+    const dk = dateKeyOf(parseDayDate(d.date));
+    let dayActive = done > 0;
+    if (quizLog[dk]) {
+      Object.values(quizLog[dk]).forEach(r => { quizAnswered += r.done; quizRight += r.right; });
+      if (Object.keys(quizLog[dk]).length) dayActive = true;
+    }
+    if (dayActive) studyDays++;
+  });
+
+  const sum = document.getElementById('recordSummary');
+  sum.innerHTML = `
+    <div class="rec-summary">
+      <div class="rec-stat"><div class="n">${studyDays}</div><div class="l">공부한 날</div></div>
+      <div class="rec-stat"><div class="n">${totalDone}</div><div class="l">완료 미션</div></div>
+      <div class="rec-stat"><div class="n">${quizRight}/${quizAnswered}</div><div class="l">퀴즈 정답</div></div>
+    </div>`;
+
+  // 날짜별 카드 (오늘까지 + 활동 있는 날)
+  const list = document.getElementById('recordList');
+  let html = '';
+  const subjOrder = ['math', 'kor', 'eng', 'sci', 'tech'];
+  all.forEach(d => {
+    const dd = parseDayDate(d.date);
+    const dk = dateKeyOf(dd);
+    const done = d.tasks.filter(t => checked[t.id]).length;
+    const hasQuiz = !!quizLog[dk];
+    const isFuture = dd.getTime() > today.getTime();
+    if (isFuture && done === 0 && !hasQuiz) return; // 미래의 빈 날은 생략
+    const isToday = dd.getTime() === today.getTime();
+    let chips = '';
+    if (hasQuiz) {
+      subjOrder.forEach(subj => {
+        const r = quizLog[dk][subj];
+        if (r) {
+          const lab = subjMap[subj] ? subjMap[subj].label : subj;
+          chips += `<span class="rec-chip">${lab} ${r.right}/${r.total}</span>`;
+        }
+      });
+    }
+    html += `
+      <div class="rec-day${isToday ? ' today' : ''}">
+        <div class="rec-day-head">
+          <span class="rec-date">${d.date}${isToday ? ' · 오늘' : ''}</span>
+          <span class="rec-mission">미션 ${done}/${d.tasks.length}</span>
+        </div>
+        ${chips ? `<div class="rec-quiz">${chips}</div>` : `<div class="rec-empty">${hasQuiz ? '' : '아직 푼 퀴즈 없음'}</div>`}
+      </div>`;
+  });
+  list.innerHTML = html || '<div class="rec-empty" style="margin:0 16px">아직 기록이 없어요. 미션을 체크하고 퀴즈를 풀면 여기에 쌓여요!</div>';
+}
+
+// ───────────────────────────────
+// 관리자(소유자) 대시보드 — PIN 입력 시에만 접근
+// ───────────────────────────────
+function studentReportHTML(name, checkedMap, qlog) {
+  const all = WEEK1.concat(WEEK2);
+  const subjOrder = ['math', 'kor', 'eng', 'sci', 'tech'];
+  let totalDone = 0, totalTasks = 0, qAns = 0, qRight = 0, days = '';
+  all.forEach(d => {
+    const done = d.tasks.filter(t => checkedMap[t.id]).length;
+    totalDone += done; totalTasks += d.tasks.length;
+    const dk = dateKeyOf(parseDayDate(d.date));
+    let chips = '';
+    if (qlog && qlog[dk]) {
+      subjOrder.forEach(subj => {
+        const r = qlog[dk][subj];
+        if (r) {
+          qAns += r.done; qRight += r.right;
+          const lab = subjMap[subj] ? subjMap[subj].label : subj;
+          chips += `<span class="rec-chip">${lab} ${r.right}/${r.total}</span>`;
+        }
+      });
+    }
+    if (done > 0 || chips) {
+      days += `<div class="rec-day"><div class="rec-day-head"><span class="rec-date">${d.date}</span><span class="rec-mission">미션 ${done}/${d.tasks.length}</span></div>${chips ? `<div class="rec-quiz">${chips}</div>` : ''}</div>`;
+    }
+  });
+  const summary = `<div class="rec-summary">
+      <div class="rec-stat"><div class="n">${totalDone}/${totalTasks}</div><div class="l">완료 미션</div></div>
+      <div class="rec-stat"><div class="n">${qRight}/${qAns}</div><div class="l">퀴즈 정답</div></div>
+    </div>`;
+  return `<div class="adm-student"><div class="adm-name">🧑‍🎓 ${name}</div>${summary}${days || '<div class="rec-empty">아직 기록 없음</div>'}</div>`;
+}
+
+// 관리자 화면 열기 → 인증 상태에 따라 로그인 폼 또는 대시보드 표시
+function enterAdmin() {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-admin').classList.add('active');
+  renderAdmin();
+}
+function exitAdmin() {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-record').classList.add('active');
+}
+
+function adminAuthAvailable() {
+  return firebaseReady && typeof firebase !== 'undefined' && firebase.auth;
+}
+
+function renderAdmin() {
+  const box = document.getElementById('adminBody');
+  if (!box) return;
+
+  // 이미 인증된 관리자면 대시보드
+  if (isAdmin) { renderAdminDashboard(); return; }
+
+  // Firebase 인증이 가능한 경우 → 이메일+비밀번호 로그인 (파일에 비밀번호 없음, 진짜 보호)
+  if (adminAuthAvailable()) {
+    box.innerHTML =
+      '<div class="sync-box"><div class="sync-head">🔐 관리자 로그인</div>' +
+      '<div class="sync-note">소유자 계정(이메일·비밀번호)으로 로그인해야 학생 기록을 볼 수 있어요. 비밀번호는 파일에 저장되지 않고 Firebase에서 확인합니다.</div>' +
+      '<div class="sync-form">' +
+        '<input id="admEmail" class="sync-in" type="email" placeholder="이메일" autocomplete="username">' +
+        '<input id="admPw" class="sync-in" type="password" placeholder="비밀번호" autocomplete="current-password">' +
+        '<button class="sync-btn" onclick="adminLogin()">로그인</button>' +
+      '</div>' +
+      '<div class="sync-status" id="admStatus"></div></div>';
+    return;
+  }
+
+  // Firebase가 없을 때(오프라인/미설정)의 보조 잠금 — 선택사항(ADMIN_PIN)
+  if (ADMIN_PIN) {
+    const p = prompt('관리자 PIN을 입력하세요 (오프라인 모드)');
+    if (p === ADMIN_PIN) { isAdmin = true; renderAdminDashboard(); }
+    else { box.innerHTML = '<div class="rec-empty" style="margin:0 16px">PIN이 올바르지 않거나 취소했어요.</div>'; }
+    return;
+  }
+
+  box.innerHTML = '<div class="rec-note">관리자 보기는 Firebase 인증(이메일 로그인) 설정 후 사용할 수 있어요. 자세한 방법은 안내를 참고하세요.</div>';
+}
+
+async function adminLogin() {
+  const setS = m => { const el = document.getElementById('admStatus'); if (el) el.textContent = m; };
+  const email = (document.getElementById('admEmail') || {}).value || '';
+  const pw = (document.getElementById('admPw') || {}).value || '';
+  if (!email || !pw) { setS('이메일과 비밀번호를 입력해 주세요.'); return; }
+  setS('🔐 확인 중…');
+  try {
+    await firebase.auth().signInWithEmailAndPassword(email.trim(), pw);
+    isAdmin = true;
+    renderAdminDashboard();
+  } catch (e) {
+    setS('⚠️ 로그인 실패 (이메일/비밀번호를 확인하세요).');
+  }
+}
+
+async function renderAdminDashboard() {
+  const box = document.getElementById('adminBody');
+  if (!box) return;
+  if (firebaseReady && db) {
+    box.innerHTML = '<div class="rec-empty" style="margin:0 16px">☁️ 학생 기록 불러오는 중…</div>';
+    try {
+      const snap = await db.collection(SYNC_COLLECTION).get();
+      if (snap.empty) { box.innerHTML = '<div class="rec-empty" style="margin:0 16px">아직 연결한 학생이 없어요.</div>'; return; }
+      let html = '';
+      snap.forEach(doc => {
+        const d = doc.data() || {};
+        const name = (doc.id.split('_')[0]) || doc.id;
+        html += studentReportHTML(name, d.checked || {}, d.quizLog || {});
+      });
+      box.innerHTML = html;
+    } catch (e) {
+      box.innerHTML = '<div class="rec-empty" style="margin:0 16px">⚠️ 불러오기 실패: ' + e.message + ' (Firestore 규칙에서 list 권한을 확인하세요)</div>';
+    }
+  } else {
+    box.innerHTML = '<div class="rec-note">클라우드 미설정/오프라인 — 이 기기의 기록만 보여요.</div>' + studentReportHTML('이 기기', checked, quizLog);
+  }
+}
+
+function resetAllData() {
+  if (!confirm('미션 체크와 퀴즈 기록을 모두 지울까요?\n이 작업은 되돌릴 수 없어요.')) return;
+  checked = {};
+  quizLog = {};
+  localStorage.removeItem('marathonChecked');
+  localStorage.removeItem('marathonQuizLog');
+  Object.keys(quizScore).forEach(k => delete quizScore[k]);
+  updateStats();
+  renderMissions();
+  renderConcepts();
+  renderTodayFocus();
+  renderRecord();
+}
+
+// ───────────────────────────────
+// TAB
+// ───────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'record') renderRecord();
+}
+
+// ───────────────────────────────
+// INIT
+// ───────────────────────────────
+updateCountdown();
+updateTrack();
+updateStats();
+updateMotive();
+renderMissions();
+renderConcepts();
+renderTodayFocus();
+renderRecord();
+initFirebase();
+renderSyncUI();
+if (isSynced()) pullRemote();
+setInterval(updateCountdown, 1000);
+setInterval(updateTrack, 60000);
+</script>
+</body>
+</html>
