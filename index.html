@@ -743,6 +743,44 @@
   .adm-name { font-size: 14px; font-weight: 900; color: var(--text); margin-bottom: 8px; }
   .adm-student .rec-summary { margin: 0 0 10px; }
   .adm-student .rec-day { margin: 0 0 8px; }
+  /* 도우미톡 (챗봇) */
+  .chat-modes { display: flex; gap: 8px; margin: 0 16px 10px; }
+  .chat-mode {
+    flex: 1; background: var(--lane); border: 1px solid var(--border); color: var(--muted);
+    border-radius: 10px; padding: 9px; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer;
+  }
+  .chat-mode.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .chat-hint { margin: 0 16px 8px; font-size: 11px; color: var(--muted); line-height: 1.5; }
+  .chat-log {
+    margin: 0 16px; background: var(--lane); border: 1px solid var(--border); border-radius: 14px;
+    padding: 12px; min-height: 240px; max-height: 46vh; overflow-y: auto;
+    box-shadow: 0 2px 8px rgba(31,42,68,0.06);
+  }
+  .chat-msg { display: flex; margin-bottom: 10px; }
+  .chat-msg.user { justify-content: flex-end; }
+  .chat-bubble {
+    max-width: 84%; padding: 10px 12px; border-radius: 14px; font-size: 13px; line-height: 1.55; white-space: pre-wrap; word-break: break-word;
+  }
+  .chat-msg.bot .chat-bubble { background: #f1f4fb; color: var(--text); border-bottom-left-radius: 4px; }
+  .chat-msg.user .chat-bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+  .chat-empty { color: var(--muted); font-size: 12px; text-align: center; padding: 24px 8px; line-height: 1.6; }
+  .chat-typing { color: var(--muted); font-size: 12px; padding: 2px 4px; }
+  .chat-quick { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 16px 0; }
+  .chat-qbtn {
+    background: transparent; border: 1px solid var(--accent); color: var(--accent);
+    border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer;
+  }
+  .chat-input-row { display: flex; gap: 8px; margin: 10px 16px 0; align-items: flex-end; }
+  .chat-input {
+    flex: 1; background: var(--lane); border: 1px solid var(--border); color: var(--text);
+    border-radius: 12px; padding: 10px 12px; font-size: 13px; font-family: inherit; resize: none; max-height: 120px; line-height: 1.4;
+  }
+  .chat-send {
+    background: var(--accent); border: none; color: #fff; border-radius: 12px; padding: 10px 16px;
+    font-size: 13px; font-weight: 800; font-family: inherit; cursor: pointer; white-space: nowrap;
+  }
+  .chat-send:disabled { opacity: 0.5; cursor: default; }
+
   /* 밝은 테마 — 카드 입체감 */
   .countdown-bar, .race-track-wrap, .week-card, .mission-day, .concept-card,
   .vcard, .rec-day, .rec-summary, .sync-box, .adm-student, .strategy-card,
@@ -859,6 +897,22 @@
   <div class="spacer"></div>
 </div>
 
+<!-- VIEW: 도우미톡 (챗봇 + 문제풀이 도우미) -->
+<div class="view" id="view-chat">
+  <div class="section-title">💬 개념 도우미 톡 <span style="color:var(--muted);font-size:11px;font-weight:400">모르는 걸 물어보고, 문제는 힌트로!</span></div>
+  <div class="chat-modes">
+    <button class="chat-mode on" id="modeConcept" onclick="setChatMode('concept')">🧠 개념 질문</button>
+    <button class="chat-mode" id="modeSolve" onclick="setChatMode('solve')">✏️ 문제풀이 도우미</button>
+  </div>
+  <div class="chat-hint" id="chatHint"></div>
+  <div class="chat-log" id="chatLog"></div>
+  <div class="chat-quick" id="chatQuick"></div>
+  <div class="chat-input-row">
+    <textarea id="chatInput" class="chat-input" rows="1" placeholder="궁금한 개념이나 문제를 적어줘"></textarea>
+    <button class="chat-send" id="chatSend" onclick="sendChat()">보내기</button>
+  </div>
+</div>
+
 <!-- VIEW: 영단어 -->
 <div class="view" id="view-vocab">
   <div class="section-title">📘 영단어 <span id="vocabCount" style="color:var(--muted);font-size:12px;font-weight:400"></span></div>
@@ -953,6 +1007,9 @@
   </button>
   <button class="tab-btn" onclick="switchTab('concept', this)">
     <span class="tab-icon">📖</span>개념
+  </button>
+  <button class="tab-btn" onclick="switchTab('chat', this)">
+    <span class="tab-icon">💬</span>도우미톡
   </button>
   <button class="tab-btn" onclick="switchTab('vocab', this)">
     <span class="tab-icon">📘</span>영단어
@@ -1201,12 +1258,12 @@ function toggleWake() {
 // 🔧 Firebase 콘솔 > 프로젝트 설정 > 내 앱(웹 </>) 의 firebaseConfig 값을 아래에 붙여넣으세요.
 //    projectId 와 apiKey 가 비어 있으면 동기화는 꺼지고 이 기기에만 저장됩니다(앱은 그대로 작동).
 const FIREBASE_CONFIG = {
- apiKey: "AIzaSyApSdZhkVUOhEFZeKTSK-Ckf119lyZ7w-g",
-  authDomain: "namwonms-7456c.firebaseapp.com",
-  projectId: "namwonms-7456c",
-  storageBucket: "namwonms-7456c.firebasestorage.app",
-  messagingSenderId: "506275176207",
-  appId: "1:506275176207:web:6776be7499949e7dcb687a"
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
 };
 const SYNC_COLLECTION = 'marathon_study';
 
@@ -3219,6 +3276,139 @@ Object.assign(VOCAB.word, {
   ],
 });
 
+
+// ───────────────────────────────
+// 💬 개념 도우미 톡 (챗봇 + 문제풀이 도우미)
+// ───────────────────────────────
+// 🔧 서버(프록시) 주소 — Vercel의 api/chat.js 를 쓰면 이대로 두면 됩니다.
+//    (Netlify를 쓸 경우엔 '/.netlify/functions/chat' 로 바꾸세요.)
+const CHAT_ENDPOINT = '/api/chat';
+const CHAT_MODEL = 'claude-haiku-4-5-20251001'; // 빠르고 저렴. 더 똑똑하게: 'claude-sonnet-4-6'
+
+const EXAM_CONTEXT = `학생은 대한민국 중학교 2학년(2022 개정 교육과정)입니다.
+[1학기 범위] 국어: 설명 방법, 반어·역설·풍자 / 영어: 동명사·현재완료·주격 관계대명사·시간 접속사 / 수학: 부등식과 연립방정식, 일차함수 / 과학: 빛과 파동, 물질의 구성(원소·원자·분자·이온·앙금) / 기술가정 1~5단원.
+[2학기 예습] 수학: 삼각형·사각형의 성질(이등변삼각형, 외심, 내심, 평행사변형, 여러 사각형) / 과학: 식물과 에너지(광합성 과정·요인, 호흡과 광합성, 광합성 산물) / 국어: 「수난이대」·「산에 언덕에」, 갈등 조정 대화, 삶과 만나는 책읽기.`;
+
+const SYS_CONCEPT = `너는 "개념 도우미 톡"이라는 다정한 학습 도우미야. ${EXAM_CONTEXT}
+- 중2 눈높이로 쉽고 친근하게, 예시나 비유를 들어 설명해.
+- 한국어로, 핵심 위주로 너무 길지 않게(보통 4~8문장).
+- 이해했는지 가볍게 확인하는 질문으로 끝내도 좋아.
+- 공부와 무관하거나 부적절한 요청은 정중히 거절하고 공부로 이끌어. 욕설·폭력·성적 내용은 다루지 않아.`;
+
+const SYS_SOLVE = `너는 "개념 도우미 톡"의 문제풀이 도우미야. ${EXAM_CONTEXT}
+가장 중요한 규칙: 처음부터 정답이나 전체 풀이를 절대 알려주지 마. 학생이 스스로 풀도록 "힌트를 한 단계씩" 줘.
+- 문제를 받으면 → [힌트 1] 어떤 개념·공식을 떠올려야 하는지만. 계산이나 답은 하지 마.
+- "다음 힌트" 요청 → [힌트 2] 식을 세우거나 접근하는 방향.
+- 또 요청 → [힌트 3] 거의 다 온 결정적 힌트. 그래도 마지막 답은 학생이 직접 내게 해.
+- 매번 끝에 "스스로 해볼까? 막히면 '다음 힌트'를 눌러줘"처럼 격려로 마무리.
+- 학생이 "정답과 풀이를 확인할래요" 또는 "모르겠어요"라고 하면, 그때만 단계별 풀이와 정답을 차근차근 보여주고 이유도 설명해.
+- 항상 한국어로 따뜻하게.`;
+
+let chatMode = 'concept';
+let chatHistory = { concept: [], solve: [] };
+let chatBusy = false;
+
+function chatHintText() {
+  return chatMode === 'solve'
+    ? '문제를 적어주면 정답 대신 힌트를 한 단계씩 줘요. 준비됐으면 문제를 붙여넣어 봐! ✏️'
+    : "모르는 개념을 물어보면 쉽게 설명해줘요. 예) '일차함수에서 기울기가 뭐야?' 🧠";
+}
+function setChatMode(m) {
+  if (chatBusy) return;
+  chatMode = m;
+  document.getElementById('modeConcept').className = 'chat-mode' + (m === 'concept' ? ' on' : '');
+  document.getElementById('modeSolve').className = 'chat-mode' + (m === 'solve' ? ' on' : '');
+  const inp = document.getElementById('chatInput');
+  if (inp) inp.placeholder = m === 'solve' ? '풀다가 막힌 문제를 적어줘' : '궁금한 개념을 적어줘';
+  renderChat();
+}
+function pushChat(role, content) { chatHistory[chatMode].push({ role, content }); }
+
+function renderChat() {
+  const hint = document.getElementById('chatHint');
+  if (hint) hint.textContent = chatHintText();
+  const log = document.getElementById('chatLog');
+  if (!log) return;
+  const msgs = chatHistory[chatMode];
+  if (!msgs.length && !chatBusy) {
+    log.innerHTML = '<div class="chat-empty">' +
+      (chatMode === 'solve'
+        ? '✏️ 문제를 적어주면 <b>정답 대신 힌트를 3단계</b>로 줄게요.<br>스스로 푸는 힘을 길러요!'
+        : '🧠 안녕! 나는 <b>개념 도우미 톡</b>이야.<br>모르는 개념을 물어보면 쉽게 알려줄게.') +
+      '</div>';
+  } else {
+    let html = '';
+    msgs.forEach(m => {
+      const who = m.role === 'user' ? 'user' : 'bot';
+      html += `<div class="chat-msg ${who}"><div class="chat-bubble">${escapeHtml(m.content)}</div></div>`;
+    });
+    if (chatBusy) html += '<div class="chat-msg bot"><div class="chat-typing">…생각 중이에요</div></div>';
+    log.innerHTML = html;
+  }
+  log.scrollTop = log.scrollHeight;
+  renderChatQuick();
+}
+function escapeHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function renderChatQuick() {
+  const q = document.getElementById('chatQuick');
+  if (!q) return;
+  const hasChat = chatHistory[chatMode].length > 0;
+  if (chatMode === 'solve' && hasChat && !chatBusy) {
+    q.innerHTML =
+      '<button class="chat-qbtn" onclick="sendChat(\'다음 힌트 주세요\')">💡 다음 힌트</button>' +
+      '<button class="chat-qbtn" onclick="sendChat(\'정답과 풀이를 확인할래요\')">✅ 정답·풀이 확인</button>' +
+      '<button class="chat-qbtn" onclick="newSolveProblem()">🔄 새 문제</button>';
+  } else {
+    q.innerHTML = '';
+  }
+}
+function newSolveProblem() {
+  chatHistory.solve = [];
+  renderChat();
+}
+function setChatBusy(b) {
+  chatBusy = b;
+  const send = document.getElementById('chatSend');
+  if (send) send.disabled = b;
+}
+
+async function sendChat(customText) {
+  if (chatBusy) return;
+  const input = document.getElementById('chatInput');
+  const text = (customText != null ? customText : (input ? input.value : '')).trim();
+  if (!text) return;
+  if (customText == null && input) input.value = '';
+  pushChat('user', text);
+  setChatBusy(true);
+  renderChat();
+  try {
+    const sys = chatMode === 'solve' ? SYS_SOLVE : SYS_CONCEPT;
+    const res = await fetch(CHAT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system: sys,
+        model: CHAT_MODEL,
+        max_tokens: 1024,
+        messages: chatHistory[chatMode].map(m => ({ role: m.role, content: m.content })),
+      }),
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.error || ('오류 ' + res.status));
+    }
+    const data = await res.json();
+    pushChat('assistant', (data.text && data.text.trim()) || '(응답이 비었어요)');
+  } catch (err) {
+    pushChat('assistant', '⚠️ 지금은 대답할 수 없어요. (' + err.message + ')\n\n※ 이 기능은 서버 설정이 필요해요. Netlify 함수(chat.js)와 API 키(ANTHROPIC_API_KEY)를 설정하면 켜집니다.');
+  } finally {
+    setChatBusy(false);
+    renderChat();
+  }
+}
+
 // ───────────────────────────────
 // TAB
 // ───────────────────────────────
@@ -3228,6 +3418,7 @@ function switchTab(name, btn) {
   document.getElementById('view-' + name).classList.add('active');
   btn.classList.add('active');
   if (name === 'record') renderRecord();
+  if (name === 'chat') renderChat();
 }
 
 // ───────────────────────────────
@@ -3245,6 +3436,13 @@ renderTodayFocus();
 renderRecord();
 renderVocab();
 renderWake();
+renderChat();
+(function () {
+  const ci = document.getElementById('chatInput');
+  if (ci) ci.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+  });
+})();
 initFirebase();
 renderSyncUI();
 if (isSynced()) pullRemote();
