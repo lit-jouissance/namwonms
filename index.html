@@ -780,6 +780,40 @@
     font-size: 13px; font-weight: 800; font-family: inherit; cursor: pointer; white-space: nowrap;
   }
   .chat-send:disabled { opacity: 0.5; cursor: default; }
+  .chat-attach {
+    background: var(--lane); border: 1px solid var(--border); border-radius: 12px;
+    padding: 8px 10px; font-size: 18px; cursor: pointer; line-height: 1;
+  }
+  .chat-preview { align-items: center; gap: 8px; margin: 8px 16px 0; }
+  .chat-preview img { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); }
+  .chat-preview-x {
+    background: var(--lane); border: 1px solid var(--border); color: var(--muted);
+    border-radius: 8px; padding: 6px 10px; font-size: 12px; font-family: inherit; cursor: pointer;
+  }
+  .chat-img { max-width: 180px; border-radius: 10px; display: block; margin-bottom: 6px; }
+
+  /* 주차 선택 드롭다운 */
+  .week-select { margin: 0 16px; position: relative; }
+  .week-select-btn {
+    width: 100%; display: flex; justify-content: space-between; align-items: center;
+    background: var(--lane); border: 1px solid var(--border); color: var(--text);
+    border-radius: 12px; padding: 12px 14px; font-size: 14px; font-weight: 800;
+    font-family: inherit; cursor: pointer; box-shadow: 0 2px 8px rgba(31,42,68,0.06);
+  }
+  .wsel-arrow { color: var(--accent); font-size: 14px; transition: transform 0.2s; }
+  .week-list {
+    margin-top: 6px; background: var(--lane); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden; box-shadow: 0 6px 18px rgba(31,42,68,0.12);
+  }
+  .week-item {
+    display: flex; align-items: center; gap: 8px; padding: 11px 14px; cursor: pointer;
+    border-bottom: 1px solid var(--border); font-size: 13px;
+  }
+  .week-item:last-child { border-bottom: none; }
+  .week-item.on { background: rgba(255,90,95,0.08); }
+  .wi-badge { font-weight: 800; color: var(--accent); min-width: 52px; }
+  .wi-name { flex: 1; color: var(--text); font-weight: 600; }
+  .wi-km { color: var(--muted); font-size: 11px; }
 
   /* 밝은 테마 — 카드 입체감 */
   .countdown-bar, .race-track-wrap, .week-card, .mission-day, .concept-card,
@@ -795,7 +829,7 @@
 <!-- HEADER -->
 <div class="header">
   <div class="header-top">
-    <div class="race-title">🏃 시험 마라톤</div>
+    <div class="race-title"><span style="display:inline-block;transform:scaleX(-1)">🏃</span> 시험 마라톤</div>
     <div class="date-badge" id="examBadge">D-?</div>
   </div>
   <div class="main-title">7월 7-8일 <span>레이스</span><br>완주하자!</div>
@@ -827,24 +861,9 @@
     </div>
   </div>
 
-  <!-- RACE TRACK -->
-  <div class="section-title">📍 레이스 진행 현황</div>
-  <div class="race-track-wrap">
-    <div class="track-header">
-      <div class="km-info" id="kmInfo">-- km 지점</div>
-      <div class="pct-info" id="pctInfo">--% 완료</div>
-    </div>
-    <div class="track-bg">
-      <div class="track-fill" id="trackFill" style="width:0%">
-        <div class="track-runner">🏃</div>
-      </div>
-    </div>
-    <div class="lane-markers">
-      <span class="lane-m">출발<br>6/24</span>
-      <span class="lane-m">중간<br>6/30</span>
-      <span class="lane-m" style="color:var(--gold)">결승 🏁<br>7/7</span>
-    </div>
-  </div>
+  <!-- 오늘의 미션 -->
+  <div class="section-title">🎯 오늘의 미션</div>
+  <div id="raceTodayMission"></div>
 
   <div class="spacer"></div>
 
@@ -879,7 +898,13 @@
 <div class="view" id="view-mission">
 
   <div class="section-title">📅 주차 선택</div>
-  <div class="week-row" id="weekRow"></div>
+  <div class="week-select">
+    <button class="week-select-btn" id="weekSelectBtn" onclick="toggleWeekList()">
+      <span id="weekSelectLabel">주차 선택</span>
+      <span class="wsel-arrow">▾</span>
+    </button>
+    <div class="week-list" id="weekList" style="display:none"></div>
+  </div>
   <div class="week-focus" id="weekFocus" style="display:none"></div>
 
   <div class="spacer"></div>
@@ -907,7 +932,13 @@
   <div class="chat-hint" id="chatHint"></div>
   <div class="chat-log" id="chatLog"></div>
   <div class="chat-quick" id="chatQuick"></div>
+  <div class="chat-preview" id="chatPreview" style="display:none">
+    <img id="chatPreviewImg" alt="첨부 사진">
+    <button class="chat-preview-x" onclick="clearChatImage()">✕</button>
+  </div>
   <div class="chat-input-row">
+    <button class="chat-attach" onclick="document.getElementById('chatFile').click()" title="사진 첨부">📎</button>
+    <input type="file" id="chatFile" accept="image/*" style="display:none" onchange="handleChatImage(this.files[0])">
     <textarea id="chatInput" class="chat-input" rows="1" placeholder="궁금한 개념이나 문제를 적어줘"></textarea>
     <button class="chat-send" id="chatSend" onclick="sendChat()">보내기</button>
   </div>
@@ -1000,7 +1031,7 @@
 <!-- TAB NAV -->
 <nav class="tab-nav">
   <button class="tab-btn active" onclick="switchTab('race', this)">
-    <span class="tab-icon">🏃</span>레이스
+    <span class="tab-icon" style="display:inline-block;transform:scaleX(-1)">🏃</span>레이스
   </button>
   <button class="tab-btn" onclick="switchTab('mission', this)">
     <span class="tab-icon">✅</span>미션
@@ -1258,12 +1289,12 @@ function toggleWake() {
 // 🔧 Firebase 콘솔 > 프로젝트 설정 > 내 앱(웹 </>) 의 firebaseConfig 값을 아래에 붙여넣으세요.
 //    projectId 와 apiKey 가 비어 있으면 동기화는 꺼지고 이 기기에만 저장됩니다(앱은 그대로 작동).
 const FIREBASE_CONFIG = {
- apiKey: "AIzaSyApSdZhkVUOhEFZeKTSK-Ckf119lyZ7w-g",
-  authDomain: "namwonms-7456c.firebaseapp.com",
-  projectId: "namwonms-7456c",
-  storageBucket: "namwonms-7456c.firebasestorage.app",
-  messagingSenderId: "506275176207",
-  appId: "1:506275176207:web:6776be7499949e7dcb687a"
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
 };
 const SYNC_COLLECTION = 'marathon_study';
 
@@ -1350,7 +1381,7 @@ async function pullRemote() {
       saveWakeLog();
     }
     await pushRemoteNow(); // 병합 결과를 다시 올려 양쪽 일치
-    updateStats(); renderMissions(); renderConcepts(); renderTodayFocus(); renderRecord(); renderWake();
+    updateStats(); renderMissions(); renderConcepts(); renderTodayFocus(); renderRecord(); renderWake(); renderRaceTodayMission();
     setSyncStatus('✅ 동기화됨');
   } catch (e) {
     console.warn(e);
@@ -1443,9 +1474,9 @@ function updateTrack() {
   const total = EXAM_DATE - START_DATE;
   let pct = Math.min(100, Math.max(0, (elapsed / total) * 100));
   const km = Math.round((pct / 100) * 42);
-  document.getElementById('trackFill').style.width = pct + '%';
-  document.getElementById('kmInfo').textContent = `${km} km 지점`;
-  document.getElementById('pctInfo').textContent = `${Math.round(pct)}% 완료`;
+  document.getElementById('trackFill') && (document.getElementById('trackFill').style.width = pct + '%');
+  document.getElementById('kmInfo') && (document.getElementById('kmInfo').textContent = `${km} km 지점`);
+  document.getElementById('pctInfo') && (document.getElementById('pctInfo').textContent = `${Math.round(pct)}% 완료`);
 }
 
 // ───────────────────────────────
@@ -1494,48 +1525,34 @@ function dayPhase(dateStr) {
   return 'future';
 }
 
-function renderMissions() {
-  const wk = WEEKS[currentWeek - 1] || WEEKS[0];
-  const data = wk.days;
-  const focusEl = document.getElementById('weekFocus');
-  if (focusEl) {
-    if (wk.focus) { focusEl.style.display = 'block'; focusEl.textContent = wk.focus; }
-    else { focusEl.style.display = 'none'; }
+function dayCardHTML(day) {
+  const allDone = day.tasks.every(t => checked[t.id]);
+  const phase = dayPhase(day.date);
+  let statusCls, statusText;
+  if (day.exam) {
+    statusCls = phase === 'past' ? 'done' : 'today';
+    statusText = day.exam === 'D1' ? '📝 1차 시험' : '📝 2차 시험';
+  } else if (phase === 'today') {
+    statusCls = 'today'; statusText = '🔴 오늘';
+  } else if (phase === 'past') {
+    statusCls = allDone ? 'done' : 'upcoming';
+    statusText = allDone ? '✅ 완료' : '⏳ 미완료';
+  } else {
+    statusCls = allDone ? 'done' : 'upcoming';
+    statusText = allDone ? '✅ 완료' : '예정';
   }
-  const container = document.getElementById('missionList');
-  container.innerHTML = '';
-
-  data.forEach((day) => {
-    const allDone = day.tasks.every(t => checked[t.id]);
-    const phase = dayPhase(day.date);
-    let statusCls, statusText;
-    if (day.exam) {
-      statusCls = phase === 'past' ? 'done' : 'today';
-      statusText = day.exam === 'D1' ? '📝 1차 시험' : '📝 2차 시험';
-    } else if (phase === 'today') {
-      statusCls = 'today'; statusText = '🔴 오늘';
-    } else if (phase === 'past') {
-      statusCls = allDone ? 'done' : 'upcoming';
-      statusText = allDone ? '✅ 완료' : '⏳ 미완료';
-    } else {
-      statusCls = allDone ? 'done' : 'upcoming';
-      statusText = allDone ? '✅ 완료' : '예정';
-    }
-
-    const academyBadge = day.academy ? `<span class="day-academy">${day.academyLabel || '🏫 영어학원'}</span>` : '';
-
-    let tasksHTML = day.tasks.map(t => {
-      const isDone = !!checked[t.id];
-      const subj = t.subj ? subjMap[t.subj] : null;
-      return `
+  const academyBadge = day.academy ? `<span class="day-academy">${day.academyLabel || '🏫 영어학원'}</span>` : '';
+  const tasksHTML = day.tasks.map(t => {
+    const isDone = !!checked[t.id];
+    const subj = t.subj ? subjMap[t.subj] : null;
+    return `
         <div class="task-item" onclick="toggleTask('${t.id}')">
-          <div class="task-check ${isDone ? 'checked' : ''}" id="chk-${t.id}"></div>
-          <div class="task-text ${isDone ? 'done-text' : ''}" id="txt-${t.id}">${t.text}</div>
+          <div class="task-check ${isDone ? 'checked' : ''}" data-chk="${t.id}"></div>
+          <div class="task-text ${isDone ? 'done-text' : ''}" data-txt="${t.id}">${t.text}</div>
           ${subj ? `<div class="task-subject ${subj.cls}">${subj.label}</div>` : ''}
         </div>`;
-    }).join('');
-
-    container.innerHTML += `
+  }).join('');
+  return `
       <div class="mission-day">
         <div class="mission-day-header">
           <div class="day-label">${day.date}${academyBadge}</div>
@@ -1543,43 +1560,81 @@ function renderMissions() {
         </div>
         ${tasksHTML}
       </div>`;
-  });
+}
+
+function findTodayDay() {
+  return ALL_DAYS.find(d => dayPhase(d.date) === 'today') || null;
+}
+
+// 레이스 화면: 오늘의 미션
+function renderRaceTodayMission() {
+  const box = document.getElementById('raceTodayMission');
+  if (!box) return;
+  const d = findTodayDay();
+  if (d) {
+    box.innerHTML = dayCardHTML(d);
+  } else {
+    box.innerHTML = '<div class="rec-empty" style="margin:0 16px">오늘은 계획된 미션이 없어요. 아래 <b>미션 탭</b>에서 전체 계획을 볼 수 있어요.</div>';
+  }
+}
+
+function renderMissions() {
+  const wk = WEEKS[currentWeek - 1] || WEEKS[0];
+  const focusEl = document.getElementById('weekFocus');
+  if (focusEl) {
+    if (wk.focus) { focusEl.style.display = 'block'; focusEl.textContent = wk.focus; }
+    else { focusEl.style.display = 'none'; }
+  }
+  // 오늘이 이번 주에 있으면 맨 위로 올려서 바로 보이게
+  const days = wk.days.slice();
+  const ti = days.findIndex(d => dayPhase(d.date) === 'today');
+  let ordered = days;
+  if (ti > 0) ordered = [days[ti]].concat(days.slice(0, ti)).concat(days.slice(ti + 1));
+  const container = document.getElementById('missionList');
+  if (container) container.innerHTML = ordered.map(dayCardHTML).join('');
 }
 
 function toggleTask(id) {
   checked[id] = !checked[id];
   localStorage.setItem('marathonChecked', JSON.stringify(checked));
   schedulePush();
-
-  // Update check UI
-  const chk = document.getElementById('chk-' + id);
-  const txt = document.getElementById('txt-' + id);
-  if (chk) chk.className = 'task-check' + (checked[id] ? ' checked' : '');
-  if (txt) txt.className = 'task-text' + (checked[id] ? ' done-text' : '');
-
+  // 같은 미션이 여러 화면(레이스·미션)에 있어도 모두 갱신
+  document.querySelectorAll('[data-chk="' + id + '"]').forEach(el => el.className = 'task-check' + (checked[id] ? ' checked' : ''));
+  document.querySelectorAll('[data-txt="' + id + '"]').forEach(el => el.className = 'task-text' + (checked[id] ? ' done-text' : ''));
   updateStats();
 }
 
-function renderWeekChips() {
-  const row = document.getElementById('weekRow');
-  if (!row) return;
-  row.innerHTML = WEEKS.map((w, i) =>
-    `<div class="week-card${i + 1 === currentWeek ? ' active' : ''}" onclick="selectWeek(${i + 1})">
-       <div class="week-glow"></div>
-       <div class="week-badge">${w.badge}</div>
-       <div class="week-name">${w.name}</div>
-       <div class="week-km">${w.km}</div>
+// 주차 선택 — 목록 펼치기(드롭다운)
+function renderWeekList() {
+  const wk = WEEKS[currentWeek - 1] || WEEKS[0];
+  const label = document.getElementById('weekSelectLabel');
+  if (label) label.textContent = wk.badge + ' · ' + wk.name;
+  const list = document.getElementById('weekList');
+  if (!list) return;
+  list.innerHTML = WEEKS.map((w, i) =>
+    `<div class="week-item${i + 1 === currentWeek ? ' on' : ''}" onclick="selectWeek(${i + 1})">
+       <span class="wi-badge">${w.badge}</span>
+       <span class="wi-name">${w.name}</span>
+       <span class="wi-km">${w.km}</span>
      </div>`
   ).join('');
 }
+function toggleWeekList() {
+  const list = document.getElementById('weekList');
+  const arrow = document.querySelector('.wsel-arrow');
+  if (!list) return;
+  const show = list.style.display === 'none';
+  list.style.display = show ? 'block' : 'none';
+  if (arrow) arrow.style.transform = show ? 'rotate(180deg)' : '';
+}
 function selectWeek(w) {
   currentWeek = w;
-  renderWeekChips();
+  renderWeekList();
   renderMissions();
-  // 선택한 주차 칩이 보이도록 스크롤
-  const row = document.getElementById('weekRow');
-  const active = row && row.children[w - 1];
-  if (active && active.scrollIntoView) active.scrollIntoView({ block: 'nearest', inline: 'center' });
+  const list = document.getElementById('weekList');
+  if (list) list.style.display = 'none';
+  const arrow = document.querySelector('.wsel-arrow');
+  if (arrow) arrow.style.transform = '';
 }
 function initialWeekIndex() {
   const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -2467,6 +2522,7 @@ function resetAllData() {
   Object.keys(quizScore).forEach(k => delete quizScore[k]);
   updateStats();
   renderMissions();
+  renderRaceTodayMission();
   renderConcepts();
   renderTodayFocus();
   renderRecord();
@@ -3307,11 +3363,45 @@ const SYS_SOLVE = `너는 "개념 도우미 톡"의 문제풀이 도우미야. $
 let chatMode = 'concept';
 let chatHistory = { concept: [], solve: [] };
 let chatBusy = false;
+let pendingImage = null; // { media_type, data(base64), dataUrl }
+
+// 사진 첨부 — 너무 크면 축소해서 base64로
+function handleChatImage(file) {
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { alert('이미지 파일만 첨부할 수 있어요.'); return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 1024;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) { const r = Math.min(MAX / w, MAX / h); w = Math.round(w * r); h = Math.round(h * r); }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      pendingImage = { media_type: 'image/jpeg', data: dataUrl.split(',')[1], dataUrl };
+      const pv = document.getElementById('chatPreview');
+      const pvi = document.getElementById('chatPreviewImg');
+      if (pvi) pvi.src = dataUrl;
+      if (pv) pv.style.display = 'flex';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function clearChatImage() {
+  pendingImage = null;
+  const pv = document.getElementById('chatPreview');
+  const f = document.getElementById('chatFile');
+  if (pv) pv.style.display = 'none';
+  if (f) f.value = '';
+}
 
 function chatHintText() {
   return chatMode === 'solve'
-    ? '문제를 적어주면 정답 대신 힌트를 한 단계씩 줘요. 준비됐으면 문제를 붙여넣어 봐! ✏️'
-    : "모르는 개념을 물어보면 쉽게 설명해줘요. 예) '일차함수에서 기울기가 뭐야?' 🧠";
+    ? '문제를 적거나 📎로 사진을 첨부하면 정답 대신 힌트를 한 단계씩 줘요. 준비됐으면 올려봐! ✏️'
+    : "모르는 개념을 물어보면 쉽게 설명해줘요. 📎로 사진도 첨부할 수 있어요. 예) '일차함수에서 기울기가 뭐야?' 🧠";
 }
 function setChatMode(m) {
   if (chatBusy) return;
@@ -3340,7 +3430,17 @@ function renderChat() {
     let html = '';
     msgs.forEach(m => {
       const who = m.role === 'user' ? 'user' : 'bot';
-      html += `<div class="chat-msg ${who}"><div class="chat-bubble">${escapeHtml(m.content)}</div></div>`;
+      let inner;
+      if (Array.isArray(m.content)) {
+        inner = m.content.map(b => {
+          if (b.type === 'image') return `<img class="chat-img" src="data:${b.source.media_type};base64,${b.source.data}" alt="첨부 사진">`;
+          if (b.type === 'text') return escapeHtml(b.text);
+          return '';
+        }).join('');
+      } else {
+        inner = escapeHtml(m.content);
+      }
+      html += `<div class="chat-msg ${who}"><div class="chat-bubble">${inner}</div></div>`;
     });
     if (chatBusy) html += '<div class="chat-msg bot"><div class="chat-typing">…생각 중이에요</div></div>';
     log.innerHTML = html;
@@ -3378,9 +3478,21 @@ async function sendChat(customText) {
   if (chatBusy) return;
   const input = document.getElementById('chatInput');
   const text = (customText != null ? customText : (input ? input.value : '')).trim();
-  if (!text) return;
+  const img = customText != null ? null : pendingImage;
+  if (!text && !img) return;
   if (customText == null && input) input.value = '';
-  pushChat('user', text);
+
+  let content;
+  if (img) {
+    content = [
+      { type: 'image', source: { type: 'base64', media_type: img.media_type, data: img.data } },
+      { type: 'text', text: text || '이 사진(문제)을 봐줘.' },
+    ];
+    clearChatImage();
+  } else {
+    content = text;
+  }
+  chatHistory[chatMode].push({ role: 'user', content });
   setChatBusy(true);
   renderChat();
   try {
@@ -3402,7 +3514,7 @@ async function sendChat(customText) {
     const data = await res.json();
     pushChat('assistant', (data.text && data.text.trim()) || '(응답이 비었어요)');
   } catch (err) {
-    pushChat('assistant', '⚠️ 지금은 대답할 수 없어요. (' + err.message + ')\n\n※ 이 기능은 서버 설정이 필요해요. Netlify 함수(chat.js)와 API 키(ANTHROPIC_API_KEY)를 설정하면 켜집니다.');
+    pushChat('assistant', '⚠️ 지금은 대답할 수 없어요. (' + err.message + ')\n\n※ 이 기능은 서버 설정이 필요해요. Vercel의 api/chat.js 와 API 키(ANTHROPIC_API_KEY)를 설정하면 켜집니다.');
   } finally {
     setChatBusy(false);
     renderChat();
@@ -3429,8 +3541,9 @@ updateTrack();
 updateStats();
 updateMotive();
 currentWeek = initialWeekIndex();
-renderWeekChips();
+renderWeekList();
 renderMissions();
+renderRaceTodayMission();
 renderConcepts();
 renderTodayFocus();
 renderRecord();
