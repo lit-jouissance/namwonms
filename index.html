@@ -903,9 +903,9 @@
 <div class="header">
   <div class="header-top">
     <div class="race-title"><span style="display:inline-block;transform:scaleX(-1)">🏃</span> 학습 마라톤</div>
-    <div class="date-badge" id="examBadge">D-?</div>
+    <div class="date-badge" id="examBadge" style="display:none">D-?</div>
   </div>
-  <div class="main-title">7월 7-8일 <span>레이스</span><br>완주하자!</div>
+  <div class="main-title"><span>진리</span>는 단순하고 <br>실력은 꾸준함에서 나온다!</div>
 </div>
 
 <!-- 표어 + 기상 체크 (항상 표시) -->
@@ -3844,6 +3844,7 @@ function switchTab(name, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
   btn.classList.add('active');
+  document.getElementById('examBadge').style.display = (name === 'mission') ? '' : 'none';
   if (name === 'record') renderRecord();
   if (name === 'chat') renderChat();
 }
