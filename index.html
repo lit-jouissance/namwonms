@@ -903,9 +903,9 @@
 <div class="header">
   <div class="header-top">
     <div class="race-title"><span style="display:inline-block;transform:scaleX(-1)">🏃</span> 학습 마라톤</div>
-    <div class="date-badge" id="examBadge" style="display:none">D-?</div>
+    <div class="date-badge" id="examBadge">D-?</div>
   </div>
-  <div class="main-title"><span>진리</span>는 단순하고 <br>실력은 꾸준함에서 나온다!</div>
+  <div class="main-title"> <span>진리</span>는 단순하고<br><span>실력</span>은 꾸준함에서 나온다!</div>
 </div>
 
 <!-- 표어 + 기상 체크 (항상 표시) -->
@@ -1224,7 +1224,7 @@ const WEEK2 = [
   ]},
   { date: '7/8 (수)', exam: 'D2', tasks: [
     { id: 'w2d8t1', subj: null, text: '📝 오늘 시험: 국어·기술가정 ✏️', done: false },
-    { id: 'w2d8t2', subj: null, text: '🏁  완주! 정말 고생했어 🏆', done: false },
+    { id: 'w2d8t2', subj: null, text: '🏁 완주! 정말 고생했어 🏆', done: false },
   ]},
 ];
 
@@ -1471,12 +1471,12 @@ function toggleWake() {
 // 🔧 Firebase 콘솔 > 프로젝트 설정 > 내 앱(웹 </>) 의 firebaseConfig 값을 아래에 붙여넣으세요.
 //    projectId 와 apiKey 가 비어 있으면 동기화는 꺼지고 이 기기에만 저장됩니다(앱은 그대로 작동).
 const FIREBASE_CONFIG = {
- apiKey: "AIzaSyApSdZhkVUOhEFZeKTSK-Ckf119lyZ7w-g",
-  authDomain: "namwonms-7456c.firebaseapp.com",
-  projectId: "namwonms-7456c",
-  storageBucket: "namwonms-7456c.firebasestorage.app",
-  messagingSenderId: "506275176207",
-  appId: "1:506275176207:web:6776be7499949e7dcb687a"
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
 };
 const SYNC_COLLECTION = 'marathon_study';
 
@@ -3715,8 +3715,8 @@ function clearChatImage() {
 
 function chatHintText() {
   return chatMode === 'solve'
-    ? '문제를 적거나 📎로 사진을 첨부하면 정답 대신 힌트를 한 단계씩 줘요. 준비됐으면 올려봐! ✏️'
-    : "모르는 개념을 물어보면 쉽게 설명해줘요. 📎로 사진도 첨부할 수 있어요. 예) '일차함수에서 기울기가 뭐야?' 🧠";
+    ? '문제를 적거나 📎(또는 캡처 후 붙여넣기)로 사진을 첨부하면 정답 대신 힌트를 한 단계씩 줘요. 준비됐으면 올려봐! ✏️'
+    : "모르는 개념을 물어보면 쉽게 설명해줘요. 📎 버튼이나 캡처 붙여넣기(Ctrl+V)로 사진도 첨부돼요. 예) '일차함수에서 기울기가 뭐야?' 🧠";
 }
 function setChatMode(m) {
   if (chatBusy) return;
@@ -3844,7 +3844,6 @@ function switchTab(name, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
   btn.classList.add('active');
-  document.getElementById('examBadge').style.display = (name === 'mission') ? '' : 'none';
   if (name === 'record') renderRecord();
   if (name === 'chat') renderChat();
 }
@@ -3869,9 +3868,21 @@ populateSettingsInputs();
 updateConceptTabVisibility();
 (function () {
   const ci = document.getElementById('chatInput');
-  if (ci) ci.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
-  });
+  if (ci) {
+    ci.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+    });
+    // 캡처 이미지 붙여넣기(Ctrl+V) 첨부 지원
+    ci.addEventListener('paste', function (e) {
+      const items = (e.clipboardData || window.clipboardData || {}).items || [];
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type && items[i].type.indexOf('image') === 0) {
+          const file = items[i].getAsFile();
+          if (file) { e.preventDefault(); handleChatImage(file); return; }
+        }
+      }
+    });
+  }
 })();
 initFirebase();
 renderSyncUI();
