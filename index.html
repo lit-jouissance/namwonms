@@ -855,6 +855,38 @@
   .set-save { flex: 1; background: var(--accent); border: none; color: #fff; border-radius: 10px; padding: 10px; font-size: 13px; font-weight: 800; font-family: inherit; cursor: pointer; }
   .set-clear { background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 10px; padding: 10px 14px; font-size: 13px; font-family: inherit; cursor: pointer; }
   .set-status { font-size: 11px; color: var(--green); margin-top: 8px; min-height: 14px; line-height: 1.5; }
+  .set-group { font-size: 12px; font-weight: 800; color: var(--accent); margin: 12px 0 8px; }
+  .set-group:first-of-type { margin-top: 0; }
+  .set-col { display: block; margin-bottom: 10px; font-size: 13px; font-weight: 700; color: var(--text); }
+  .set-col > span { display: block; margin-bottom: 6px; }
+  .set-hint { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .set-area { max-width: 100%; width: 100%; resize: vertical; line-height: 1.4; }
+  .set-check { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text); font-weight: 600; margin: 4px 0 2px; cursor: pointer; }
+  .set-check input { width: 16px; height: 16px; }
+
+  /* 개념 탭 시험기간 안내 */
+  .concept-exam-note {
+    margin: 0 16px 12px; padding: 12px 14px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), var(--gold)); color: #fff;
+    box-shadow: 0 4px 14px rgba(255,90,95,0.2);
+  }
+  .cen-head { font-size: 14px; font-weight: 900; }
+  .cen-scope { font-size: 12px; margin-top: 6px; background: rgba(255,255,255,0.18); padding: 6px 9px; border-radius: 8px; line-height: 1.45; }
+  .cen-sub { font-size: 11px; margin-top: 6px; opacity: 0.92; line-height: 1.45; }
+
+  /* 개념 탭 — 도우미톡 학습 허브 */
+  .concept-hub { display: flex; gap: 8px; margin: 0 16px 10px; }
+  .chub-btn {
+    flex: 1; background: var(--accent); border: none; color: #fff; border-radius: 12px;
+    padding: 13px 10px; font-size: 13px; font-weight: 800; font-family: inherit; cursor: pointer;
+    box-shadow: 0 3px 10px rgba(255,90,95,0.18);
+  }
+  .chub-btn.solve { background: var(--gold); box-shadow: 0 3px 10px rgba(255,140,26,0.18); }
+  .concept-ref-label {
+    margin: 0 16px 6px; font-size: 11px; color: var(--muted); line-height: 1.5;
+    background: var(--lane); border: 1px dashed var(--border); border-radius: 10px; padding: 8px 10px;
+  }
+  .concept-ref-label b { color: var(--accent); }
 
   /* 밝은 테마 — 카드 입체감 */
   .countdown-bar, .race-track-wrap, .week-card, .mission-day, .concept-card,
@@ -930,10 +962,17 @@
   <div class="settings-box">
     <button class="settings-toggle" onclick="toggleSettings()">⚙️ 시험일·공부기간 설정 <span class="wsel-arrow" id="setArrow">▾</span></button>
     <div class="settings-body" id="settingsBody" style="display:none">
-      <div class="set-note">시험일과 공부 시작일을 정하면, <b>방학 이후 주차가 자동으로 이어지고</b> 시험 대비 주간이 만들어져요. (레이스 화면에 D-day로도 보여요.)</div>
+      <div class="set-note">방학·개학·시험 날짜를 정하면 <b>주차가 자동으로 만들어져요(어느 해든 재사용).</b> 시험기간(공부 시작일~시험일)엔 <b>개념 탭이 자동으로 열려요.</b></div>
+      <div class="set-group">🌴 방학·개학 (매년 이 부분만 바꾸면 돼요)</div>
+      <label class="set-row"><span>🌴 방학 시작일</span><input type="date" id="setVacStart" class="set-in"></label>
+      <label class="set-row"><span>🏫 개학일</span><input type="date" id="setSchoolStart" class="set-in"></label>
+      <div class="set-group">📝 시험 (정하면 D-day·시험대비 주간 생성)</div>
       <label class="set-row"><span>📝 시험 이름</span><input id="setExamLabel" class="set-in" placeholder="예: 2학기 중간고사"></label>
       <label class="set-row"><span>📅 시험일</span><input type="date" id="setExamDate" class="set-in"></label>
       <label class="set-row"><span>📖 공부 시작일</span><input type="date" id="setStudyStart" class="set-in"></label>
+      <label class="set-col"><span>📚 시험 범위 메모 <span class="set-hint">(시험기간에 개념 탭 상단에 표시)</span></span>
+        <textarea id="setExamScope" class="set-in set-area" rows="2" placeholder="예: 수학 삼각형의 성질 / 과학 광합성 / 국어 수난이대"></textarea></label>
+      <label class="set-check"><input type="checkbox" id="setShowConcept"> 개념 탭 항상 보기 (시험기간이 아니어도)</label>
       <div class="set-btns">
         <button class="set-save" onclick="saveExamSettings()">저장</button>
         <button class="set-clear" onclick="clearExamSettings()">지우기</button>
@@ -960,7 +999,13 @@
 
 <!-- VIEW: 개념 -->
 <div class="view" id="view-concept">
-  <div class="section-title">📖 시험 범위 핵심 개념</div>
+  <div class="concept-exam-note" id="conceptExamNote" style="display:none"></div>
+  <div class="concept-hub">
+    <button class="chub-btn" onclick="goChatFromConcept('concept')">💬 개념 질문하기</button>
+    <button class="chub-btn solve" onclick="goChatFromConcept('solve')">✏️ 문제풀이 도우미</button>
+  </div>
+  <div class="concept-ref-label">📚 아래는 참고용 개념 카드예요. 이번 시험 범위는 위 <b>도우미톡</b>으로 학습하세요!</div>
+  <div class="section-title">📖 참고 개념</div>
   <div id="todayFocus"></div>
   <div id="conceptList"></div>
   <div class="concept-note">※ 교과서 본문이 아니라 시험 대비용 핵심 요약입니다. 각 항목을 펼쳐 보고, 책·노트와 함께 확인하세요.</div>
@@ -1081,7 +1126,7 @@
   <button class="tab-btn" onclick="switchTab('mission', this)">
     <span class="tab-icon">✅</span>미션
   </button>
-  <button class="tab-btn" onclick="switchTab('concept', this)">
+  <button class="tab-btn" id="tabConcept" onclick="switchTab('concept', this)">
     <span class="tab-icon">📖</span>개념
   </button>
   <button class="tab-btn" onclick="switchTab('chat', this)">
@@ -1267,78 +1312,102 @@ function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); retu
 function fmtAny(d) { return (d.getMonth() + 1) + '/' + d.getDate() + ' (' + DOW_KR[d.getDay()] + ')'; }
 function mdKeyAny(d) { return (d.getMonth() + 1) + '_' + d.getDate(); }
 
-const TERM_START = new Date(2026, 7, 18); // 8/18 — 개학(8/17) 다음날부터
-// 계획 시작 연도(2026-06) 기준: 6~12월=2026, 1~5월=2027 로 해석 → 연도 넘김 처리
+// 계획 시작 연도 기준(파싱 폴백용)
 const PLAN_BASE_YEAR = 2026;
 
-function makeTermWeek(start, end, n, isPrep, examDate, studyStart, examLabel) {
-  const days = [];
-  let d = new Date(start);
-  while (d <= end) {
-    const k = mdKeyAny(d), academy = [1, 3, 5].includes(d.getDay());
-    const inPrep = studyStart && examDate && d >= studyStart && d <= examDate;
-    const isExam = examDate && ymd(d) === ymd(examDate);
-    const tasks = [
-      { id: `t${k}a`, subj: 'eng', text: '영단어 10개 (📘 영단어 탭)', done: false },
-      { id: `t${k}b`, subj: null, text: '📖 책 읽기', done: false },
-      { id: `t${k}c`, subj: null, text: '🥁 드럼 1시간 연습', done: false },
+// 설정 기본값(미설정 시 = 2026학년도 여름)
+const PLAN_DEFAULTS = { vacationStart: '2026-07-21', schoolStart: '2026-08-17' };
+function getSetting(k) { return (SETTINGS && SETTINGS[k]) || PLAN_DEFAULTS[k] || null; }
+function mondayOnOrBefore(d) { const x = new Date(d); x.setHours(0, 0, 0, 0); const wd = x.getDay(); x.setDate(x.getDate() - (wd === 0 ? 6 : wd - 1)); return x; }
+// 각 날짜의 실제 Date — 연도 포함 ymd 우선(연도 넘김 안전), 없으면 폴백
+function dDate(day) { return (day && day.ymd) ? new Date(day.ymd + 'T00:00:00') : parseDayDate(day.date); }
+
+function planDayTasks(d, isVac, inPrep, isExam) {
+  const k = mdKeyAny(d), academy = [1, 3, 5].includes(d.getDay());
+  const P = isVac ? 'v' : 's';
+  let tasks;
+  if (isVac) {
+    tasks = [
+      { id: `v${k}1`, subj: 'eng', text: '📘 영단어 30개 (영단어 탭 활용)', done: false },
+      { id: `v${k}2`, subj: null, text: '📖 책 20쪽 읽기', done: false },
+      { id: `v${k}3`, subj: 'math', text: '✏️ 수학 5문제 풀기', done: false },
+      { id: `v${k}4`, subj: null, text: '🥁 드럼 1시간 연습', done: false },
     ];
-    if (academy) tasks.push({ id: `t${k}d`, subj: 'eng', text: '🏫 영어 과외', done: false });
-    if (inPrep && !isExam) tasks.push({ id: `t${k}e`, subj: null, text: '📚 시험 대비 공부 (약한 과목 집중)', done: false });
-    const day = { date: fmtAny(d), academy, academyLabel: '🏫 영어과외', tasks };
-    if (isExam) { day.exam = 'X'; day.examText = '📝 ' + (examLabel || '시험'); }
-    days.push(day);
-    d = addDays(d, 1);
+  } else {
+    tasks = [
+      { id: `s${k}1`, subj: 'eng', text: '영단어 10개 (📘 영단어 탭)', done: false },
+      { id: `s${k}2`, subj: null, text: '📖 책 읽기', done: false },
+      { id: `s${k}3`, subj: null, text: '🥁 드럼 1시간 연습', done: false },
+    ];
   }
-  const label = examLabel || '시험';
-  const km = fmtAny(start).split(' ')[0] + '~' + fmtAny(end).split(' ')[0];
-  if (isPrep) {
-    return { badge: '📝 시험대비', name: label + ' 대비', km, focus: `📝 ${label} 대비 주간! 매일 약한 과목을 집중 공부해요.`, days };
-  }
-  return { badge: '학기 ' + n + '주', name: '학기 중 루틴', km, focus: '📗 학기 중 루틴 — 영단어 10 · 독서 · 드럼, 월·수·금 과외.', days };
+  if (academy) tasks.push({ id: `${P}${k}ac`, subj: 'eng', text: '🏫 영어 과외', done: false });
+  if (inPrep && !isExam) tasks.push({ id: `x${k}st`, subj: null, text: '📚 시험 대비 공부 (약한 과목 집중)', done: false });
+  tasks.push({ id: `sleep_${k}`, subj: null, text: '🌙 일찍 자기 (밤 11시 전 취침)', done: false });
+  return { academy, tasks };
 }
 
-function genTermWeeks() {
+// 방학 시작·개학일·시험일을 바탕으로 어느 해든 주차를 생성 (완전 범용)
+function buildPlan() {
+  const vacStart = parseYmd(getSetting('vacationStart'));
+  const schoolStart = parseYmd(getSetting('schoolStart'));
   const examDate = parseYmd(SETTINGS.examDate);
   const studyStart = parseYmd(SETTINGS.studyStart);
-  const horizon = examDate ? addDays(examDate, 7) : addDays(TERM_START, 7 * 10); // 시험 있으면 시험 다음주까지, 없으면 10주
-  const weeks = [];
-  let cur = new Date(TERM_START), n = 1;
-  while (cur < horizon && n <= 40) {
+  const examLabel = SETTINGS.examLabel || '시험';
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+
+  const startBasis = (vacStart && vacStart < today) ? vacStart : today;
+  let cur = mondayOnOrBefore(startBasis);
+  const cands = [today.getTime() + 86400000 * 7 * 8];
+  if (examDate) cands.push(examDate.getTime() + 86400000 * 7);
+  if (schoolStart) cands.push(schoolStart.getTime() + 86400000 * 7 * 16);
+  const horizon = new Date(Math.max.apply(null, cands));
+  // 범위를 최대 ~48주로 제한(시험이 멀면 시작점을 뒤로 당겨 시험 주가 항상 포함되게)
+  const MAX_SPAN = 86400000 * 7 * 48;
+  if (horizon.getTime() - cur.getTime() > MAX_SPAN) {
+    cur = mondayOnOrBefore(new Date(horizon.getTime() - MAX_SPAN));
+  }
+
+  const weeks = []; let vacNo = 0, termNo = 0, guard = 0;
+  while (cur < horizon && guard < 52) {
+    guard++;
     const wkEnd = addDays(cur, 6);
-    const isPrep = studyStart && examDate && wkEnd >= studyStart && cur <= examDate;
-    weeks.push(makeTermWeek(new Date(cur), wkEnd, n, isPrep, examDate, studyStart, SETTINGS.examLabel));
-    cur = addDays(cur, 7); n++;
+    const days = []; let d = new Date(cur); let anyVac = false, anyPrep = false;
+    while (d <= wkEnd) {
+      const isVac = vacStart && schoolStart && d >= vacStart && d < schoolStart;
+      const inPrep = studyStart && examDate && d >= studyStart && d <= examDate;
+      const isExam = examDate && ymd(d) === ymd(examDate);
+      if (isVac) anyVac = true;
+      if (inPrep) anyPrep = true;
+      const t = planDayTasks(d, isVac, inPrep, isExam);
+      const day = { date: fmtAny(d), ymd: ymd(d), academy: t.academy, academyLabel: '🏫 영어과외', tasks: t.tasks };
+      if (isExam) { day.exam = 'X'; day.examText = '📝 ' + examLabel; }
+      days.push(day);
+      d = addDays(d, 1);
+    }
+    const km = fmtAny(cur).split(' ')[0] + '~' + fmtAny(wkEnd).split(' ')[0];
+    let badge, name, focus;
+    if (anyPrep) {
+      badge = '📝 시험대비'; name = examLabel + ' 대비';
+      focus = `📝 ${examLabel} 대비 주간! 매일 약한 과목을 집중 공부해요. (개념 탭이 열려요)`;
+    } else if (anyVac) {
+      vacNo++; const review = vacNo <= 2;
+      badge = '방학 ' + vacNo + '주'; name = review ? '복습 집중' : '예습';
+      focus = review
+        ? `📚 방학 ${vacNo}주차 — 복습 집중! 영단어 30 · 책 20쪽 · 수학 5문제. (개념은 도우미톡으로)`
+        : `🔭 방학 ${vacNo}주차 — 다음 학기 예습. 도우미톡으로 개념을 미리 익혀요.`;
+    } else {
+      termNo++; badge = '학기 ' + termNo + '주'; name = '학기 중 루틴';
+      focus = '📗 학기 중 루틴 — 영단어 10 · 독서 · 드럼, 월·수·금 과외. (개념 학습은 도우미톡!)';
+    }
+    weeks.push({ badge, name, km, focus, days });
+    cur = addDays(cur, 7);
   }
   return weeks;
 }
 
-// 고정 주차: 시험대비 2주 + 방학전 + 방학 4주
-const BASE_WEEKS = [
-  { badge: 'WEEK 1', name: '워밍업', km: '0 ~ 21km', days: WEEK1 },
-  { badge: 'WEEK 2', name: '본격 레이스', km: '21 ~ 42km', days: WEEK2 },
-  { badge: '방학 전', name: '시험 끝·휴식', km: '7/9~7/20', focus: '🎉 시험 끝! 방학 전엔 가볍게 — 컨디션 회복하며 영단어·드럼·독서만 유지해요.', days: genPreVacation() },
-  { badge: '방학 1주', name: '복습 집중', km: '7/21~7/27', focus: '📚 방학 1주차 — 1학기 복습에 집중! 매일 영단어 30 · 책 20쪽 · 수학 5문제.', days: genVacation(7, 21, 7, 27, REVIEW_FOCUS) },
-  { badge: '방학 2주', name: '복습 마무리', km: '7/28~8/3', focus: '📚 방학 2주차 — 복습 마무리. 약한 과목 오답을 한 번 더 정리해요.', days: genVacation(7, 28, 8, 3, REVIEW_FOCUS) },
-  { badge: '방학 3주', name: '2학기 예습', km: '8/4~8/10', focus: '🔭 방학 3주차 — 2학기 예습 시작! 수학(삼각형의 성질)·과학(광합성) 개념 + 국어 작품 미리 읽기.', days: genVacation(8, 4, 8, 10, PREVIEW_W3) },
-  { badge: '방학 4주', name: '마무리·개학', km: '8/11~8/16', focus: '🏁 방학 4주차 — 예습 마무리(사각형·광합성 정리) + 개학(8/17) 준비. 생활 리듬 회복!', days: genVacation(8, 11, 8, 16, PREVIEW_W4) },
-];
-
 let WEEKS = [];
 let ALL_DAYS = [];
-function addBedtimeAll() {
-  WEEKS.forEach(w => w.days.forEach(d => {
-    const dd = parseDayDate(d.date); const sk = mdKeyAny(dd);
-    if (!d.tasks.some(t => t.id === 'sleep_' + sk)) {
-      d.tasks.push({ id: 'sleep_' + sk, subj: null, text: '🌙 일찍 자기 (밤 11시 전 취침)', done: false });
-    }
-  }));
-}
-function rebuildPlan() {
-  WEEKS = BASE_WEEKS.concat(genTermWeeks());
-  addBedtimeAll();
-  ALL_DAYS = WEEKS.flatMap(w => w.days);
-}
+function rebuildPlan() { WEEKS = buildPlan(); ALL_DAYS = WEEKS.flatMap(w => w.days); }
 rebuildPlan();
 
 const MOTIVES = [
@@ -1498,7 +1567,7 @@ async function pullRemote() {
     }
     await pushRemoteNow(); // 병합 결과를 다시 올려 양쪽 일치
     currentWeek = initialWeekIndex();
-    renderWeekList(); updateStats(); renderMissions(); renderConcepts(); renderTodayFocus(); renderRecord(); renderWake(); renderRaceTodayMission(); updateExamBadge();
+    renderWeekList(); updateStats(); renderMissions(); renderConcepts(); renderTodayFocus(); renderRecord(); renderWake(); renderRaceTodayMission(); updateExamBadge(); updateConceptTabVisibility();
     setSyncStatus('✅ 동기화됨');
   } catch (e) {
     console.warn(e);
@@ -1610,8 +1679,8 @@ function updateStats() {
   // Streak: 오늘로부터 거꾸로, 최소 1개 완료한 날이 며칠 연속인지 (미래 날짜는 제외)
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const past = ALL_DAYS
-    .filter(d => parseDayDate(d.date).getTime() <= today.getTime())
-    .sort((a, b) => parseDayDate(a.date) - parseDayDate(b.date));
+    .filter(d => dDate(d).getTime() <= today.getTime())
+    .sort((a, b) => dDate(a) - dDate(b));
   let streak = 0;
   for (let i = past.length - 1; i >= 0; i--) {
     if (past[i].tasks.some(t => checked[t.id])) streak++;
@@ -1638,8 +1707,8 @@ function parseDayDate(dateStr) {
   const yr = mo >= 6 ? PLAN_BASE_YEAR : PLAN_BASE_YEAR + 1;
   return new Date(yr, mo - 1, parseInt(m[2], 10));
 }
-function dayPhase(dateStr) {
-  const d = parseDayDate(dateStr);
+function dayPhase(day) {
+  const d = (typeof day === 'string') ? parseDayDate(day) : dDate(day);
   const today = new Date(); today.setHours(0,0,0,0);
   if (d.getTime() === today.getTime()) return 'today';
   if (d.getTime() < today.getTime()) return 'past';
@@ -1648,7 +1717,7 @@ function dayPhase(dateStr) {
 
 function dayCardHTML(day) {
   const allDone = day.tasks.every(t => checked[t.id]);
-  const phase = dayPhase(day.date);
+  const phase = dayPhase(day);
   let statusCls, statusText;
   if (day.exam) {
     statusCls = phase === 'past' ? 'done' : 'today';
@@ -1684,7 +1753,7 @@ function dayCardHTML(day) {
 }
 
 function findTodayDay() {
-  return ALL_DAYS.find(d => dayPhase(d.date) === 'today') || null;
+  return ALL_DAYS.find(d => dayPhase(d) === 'today') || null;
 }
 
 // 레이스 화면: 오늘의 미션
@@ -1708,7 +1777,7 @@ function renderMissions() {
   }
   // 오늘이 이번 주에 있으면 맨 위로 올려서 바로 보이게
   const days = wk.days.slice();
-  const ti = days.findIndex(d => dayPhase(d.date) === 'today');
+  const ti = days.findIndex(d => dayPhase(d) === 'today');
   let ordered = days;
   if (ti > 0) ordered = [days[ti]].concat(days.slice(0, ti)).concat(days.slice(ti + 1));
   const container = document.getElementById('missionList');
@@ -1769,9 +1838,14 @@ function toggleSettings() {
 }
 function populateSettingsInputs() {
   const el = id => document.getElementById(id);
-  if (el('setExamLabel')) el('setExamLabel').value = SETTINGS.examLabel || '';
-  if (el('setExamDate')) el('setExamDate').value = SETTINGS.examDate || '';
-  if (el('setStudyStart')) el('setStudyStart').value = SETTINGS.studyStart || '';
+  const set = (id, v) => { if (el(id)) el(id).value = v || ''; };
+  set('setVacStart', SETTINGS.vacationStart);
+  set('setSchoolStart', SETTINGS.schoolStart);
+  set('setExamLabel', SETTINGS.examLabel);
+  set('setExamDate', SETTINGS.examDate);
+  set('setStudyStart', SETTINGS.studyStart);
+  set('setExamScope', SETTINGS.examScope);
+  if (el('setShowConcept')) el('setShowConcept').checked = !!SETTINGS.showConcept;
 }
 function refreshAfterPlanChange() {
   currentWeek = initialWeekIndex();
@@ -1780,23 +1854,38 @@ function refreshAfterPlanChange() {
   renderRaceTodayMission();
   updateStats();
   updateExamBadge();
+  updateConceptTabVisibility();
 }
 function saveExamSettings() {
   const el = id => document.getElementById(id);
-  const examDate = el('setExamDate') ? el('setExamDate').value : '';
-  const studyStart = el('setStudyStart') ? el('setStudyStart').value : '';
-  const examLabel = el('setExamLabel') ? el('setExamLabel').value.trim() : '';
+  const v = id => el(id) ? el(id).value : '';
+  const examDate = v('setExamDate'), studyStart = v('setStudyStart');
+  const vacationStart = v('setVacStart'), schoolStart = v('setSchoolStart');
   if (studyStart && examDate && studyStart > examDate) {
     if (el('setStatus')) el('setStatus').textContent = '⚠️ 공부 시작일이 시험일보다 늦어요. 다시 확인해 주세요.';
     return;
   }
-  SETTINGS = { examLabel, examDate: examDate || null, studyStart: studyStart || null };
+  if (vacationStart && schoolStart && vacationStart >= schoolStart) {
+    if (el('setStatus')) el('setStatus').textContent = '⚠️ 개학일이 방학 시작일보다 빨라요. 다시 확인해 주세요.';
+    return;
+  }
+  SETTINGS = {
+    vacationStart: vacationStart || null,
+    schoolStart: schoolStart || null,
+    examLabel: (v('setExamLabel') || '').trim(),
+    examDate: examDate || null,
+    studyStart: studyStart || null,
+    examScope: (v('setExamScope') || '').trim(),
+    showConcept: el('setShowConcept') ? el('setShowConcept').checked : false,
+  };
   saveSettingsLS();
   schedulePush();
   rebuildPlan();
   refreshAfterPlanChange();
-  const termCount = WEEKS.length - BASE_WEEKS.length;
-  if (el('setStatus')) el('setStatus').textContent = '✅ 저장됐어요! 방학 이후 ' + termCount + '개 주차가 만들어졌어요.' + (examDate ? ' 레이스 화면에 D-day가 떠요.' : '');
+  const msg = examDate
+    ? '✅ 저장됐어요! 총 ' + WEEKS.length + '개 주차 · 시험 D-day와 시험대비 주간이 생겼어요.'
+    : '✅ 저장됐어요! 총 ' + WEEKS.length + '개 주차가 만들어졌어요.';
+  if (el('setStatus')) el('setStatus').textContent = msg;
 }
 function clearExamSettings() {
   SETTINGS = {};
@@ -1806,7 +1895,60 @@ function clearExamSettings() {
   refreshAfterPlanChange();
   populateSettingsInputs();
   const st = document.getElementById('setStatus');
-  if (st) st.textContent = '설정을 지웠어요. (기본 주차로 돌아감)';
+  if (st) st.textContent = '설정을 지웠어요. (기본값으로 돌아감)';
+}
+
+// 시험기간(공부 시작일~시험일) 여부
+function isExamPeriod() {
+  const examDate = parseYmd(SETTINGS.examDate);
+  const studyStart = parseYmd(SETTINGS.studyStart);
+  if (!examDate) return false;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const start = studyStart || examDate;
+  return today.getTime() >= start.getTime() && today.getTime() <= examDate.getTime();
+}
+// 개념 탭: 평소 숨김 → 시험기간 또는 '항상 보기'일 때만 표시
+function updateConceptTabVisibility() {
+  const tab = document.getElementById('tabConcept');
+  const show = isExamPeriod() || !!SETTINGS.showConcept;
+  if (tab) tab.style.display = show ? '' : 'none';
+  // 숨기는데 지금 개념 탭을 보고 있으면 레이스로 이동
+  if (!show) {
+    const cv = document.getElementById('view-concept');
+    if (cv && cv.classList.contains('active')) {
+      const raceBtn = [...document.querySelectorAll('.tab-btn')].find(b => /레이스/.test(b.textContent));
+      if (raceBtn) switchTab('race', raceBtn);
+    }
+  }
+  renderConceptExamNote();
+}
+// 개념 탭 → 도우미톡으로 이동해서 학습
+function goChatFromConcept(mode) {
+  const chatBtn = [...document.querySelectorAll('.tab-btn')].find(b => /도우미톡/.test(b.textContent));
+  if (chatBtn) switchTab('chat', chatBtn);
+  setChatMode(mode || 'concept');
+  const inp = document.getElementById('chatInput');
+  if (inp && (mode || 'concept') === 'concept' && SETTINGS.examScope) {
+    const first = SETTINGS.examScope.split('/')[0].trim();
+    if (first) inp.placeholder = '예: ' + first + ' 개념 쉽게 설명해줘';
+  }
+}
+
+function renderConceptExamNote() {
+  const box = document.getElementById('conceptExamNote');
+  if (!box) return;
+  if (isExamPeriod()) {
+    const label = SETTINGS.examLabel || '시험';
+    const examDate = parseYmd(SETTINGS.examDate);
+    const dd = Math.round((examDate - (new Date()).setHours(0, 0, 0, 0)) / 86400000);
+    const scope = SETTINGS.examScope ? ('<div class="cen-scope">📚 시험 범위: ' + escapeHtml(SETTINGS.examScope) + '</div>') : '';
+    box.style.display = 'block';
+    box.innerHTML = '<div class="cen-head">📝 ' + escapeHtml(label) + ' 대비 기간 · D-' + Math.max(0, dd) + '</div>' + scope +
+      '<div class="cen-sub">아래 개념으로 시험 범위를 복습하고, 모르면 💬 도우미톡에 물어봐요!</div>';
+  } else {
+    box.style.display = 'none';
+    box.innerHTML = '';
+  }
 }
 
 function initialWeekIndex() {
@@ -1814,8 +1956,8 @@ function initialWeekIndex() {
   for (let i = 0; i < WEEKS.length; i++) {
     const days = WEEKS[i].days;
     if (!days.length) continue;
-    const first = parseDayDate(days[0].date).getTime();
-    const last = parseDayDate(days[days.length - 1].date).getTime();
+    const first = dDate(days[0]).getTime();
+    const last = dDate(days[days.length - 1]).getTime();
     if (today.getTime() <= last) return i + 1; // 오늘이 속하거나 아직 안 지난 첫 주
     void first;
   }
@@ -2418,7 +2560,7 @@ function renderTodayFocus() {
   if (!el) return;
   const all = ALL_DAYS;
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  const td = all.find(d => parseDayDate(d.date).getTime() === today.getTime());
+  const td = all.find(d => dDate(d).getTime() === today.getTime());
   const now = new Date();
   const ds = (now.getMonth() + 1) + '월 ' + now.getDate() + '일';
   if (!td) {
@@ -2515,7 +2657,7 @@ function renderRecord() {
   all.forEach(d => {
     const done = d.tasks.filter(t => checked[t.id]).length;
     totalDone += done; totalTasks += d.tasks.length;
-    const dk = dateKeyOf(parseDayDate(d.date));
+    const dk = dateKeyOf(dDate(d));
     let dayActive = done > 0;
     if (quizLog[dk]) {
       Object.values(quizLog[dk]).forEach(r => { quizAnswered += r.done; quizRight += r.right; });
@@ -2537,7 +2679,7 @@ function renderRecord() {
   let html = '';
   const subjOrder = ['math', 'kor', 'eng', 'sci', 'tech'];
   all.forEach(d => {
-    const dd = parseDayDate(d.date);
+    const dd = dDate(d);
     const dk = dateKeyOf(dd);
     const done = d.tasks.filter(t => checked[t.id]).length;
     const hasQuiz = !!quizLog[dk];
@@ -2576,7 +2718,7 @@ function studentReportHTML(name, checkedMap, qlog) {
   all.forEach(d => {
     const done = d.tasks.filter(t => checkedMap[t.id]).length;
     totalDone += done; totalTasks += d.tasks.length;
-    const dk = dateKeyOf(parseDayDate(d.date));
+    const dk = dateKeyOf(dDate(d));
     let chips = '';
     if (qlog && qlog[dk]) {
       subjOrder.forEach(subj => {
@@ -3723,6 +3865,7 @@ renderVocab();
 renderWake();
 renderChat();
 populateSettingsInputs();
+updateConceptTabVisibility();
 (function () {
   const ci = document.getElementById('chatInput');
   if (ci) ci.addEventListener('keydown', function (e) {
