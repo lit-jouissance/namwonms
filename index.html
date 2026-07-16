@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>학습 마라톤 <span style='display:inline-block;transform:scaleX(-1)'>🏃</span></title>
+<title>시험 마라톤 🏃</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
 
@@ -815,6 +815,47 @@
   .wi-name { flex: 1; color: var(--text); font-weight: 600; }
   .wi-km { color: var(--muted); font-size: 11px; }
 
+  /* 다음 시험 D-day 카드 */
+  .exam-dday { margin: 0 16px 4px; }
+  .exam-dday-inner {
+    display: flex; align-items: center; gap: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    color: #fff; border-radius: 14px; padding: 14px 16px;
+    box-shadow: 0 4px 14px rgba(255,90,95,0.2);
+  }
+  .exam-dday-inner.none {
+    display: block; background: var(--lane); color: var(--muted);
+    border: 1px dashed var(--border); box-shadow: none; font-size: 12px; line-height: 1.5;
+  }
+  .exam-dday-inner.none b { color: var(--text); }
+  .edd-big { font-size: 26px; font-weight: 900; }
+  .edd-meta { font-size: 12px; line-height: 1.5; }
+  .edd-meta b { font-size: 14px; }
+
+  /* 시험 설정 패널 */
+  .settings-box { margin: 0 16px 8px; }
+  .settings-toggle {
+    width: 100%; display: flex; justify-content: space-between; align-items: center;
+    background: var(--lane); border: 1px solid var(--border); color: var(--text);
+    border-radius: 12px; padding: 11px 14px; font-size: 13px; font-weight: 800;
+    font-family: inherit; cursor: pointer; box-shadow: 0 2px 8px rgba(31,42,68,0.06);
+  }
+  .settings-body {
+    margin-top: 8px; background: var(--lane); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px; box-shadow: 0 2px 8px rgba(31,42,68,0.06);
+  }
+  .set-note { font-size: 11px; color: var(--muted); line-height: 1.55; margin-bottom: 12px; }
+  .set-note b { color: var(--text); }
+  .set-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; font-size: 13px; font-weight: 700; color: var(--text); }
+  .set-in {
+    flex: 1; max-width: 62%; background: #fff; border: 1px solid var(--border); color: var(--text);
+    border-radius: 9px; padding: 8px 10px; font-size: 13px; font-family: inherit;
+  }
+  .set-btns { display: flex; gap: 8px; margin-top: 4px; }
+  .set-save { flex: 1; background: var(--accent); border: none; color: #fff; border-radius: 10px; padding: 10px; font-size: 13px; font-weight: 800; font-family: inherit; cursor: pointer; }
+  .set-clear { background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 10px; padding: 10px 14px; font-size: 13px; font-family: inherit; cursor: pointer; }
+  .set-status { font-size: 11px; color: var(--green); margin-top: 8px; min-height: 14px; line-height: 1.5; }
+
   /* 밝은 테마 — 카드 입체감 */
   .countdown-bar, .race-track-wrap, .week-card, .mission-day, .concept-card,
   .vcard, .rec-day, .rec-summary, .sync-box, .adm-student, .strategy-card,
@@ -847,19 +888,8 @@
 <!-- VIEW: 레이스 -->
 <div class="view active" id="view-race">
 
-  <!-- COUNTDOWN -->
-  <div class="countdown-bar">
-    <div class="countdown-label">⏱ 시험까지 남은 시간</div>
-    <div class="countdown-nums">
-      <div class="cd-block"><div class="cd-num" id="cdDays">--</div><div class="cd-unit">일</div></div>
-      <div class="cd-sep">:</div>
-      <div class="cd-block"><div class="cd-num" id="cdHours">--</div><div class="cd-unit">시간</div></div>
-      <div class="cd-sep">:</div>
-      <div class="cd-block"><div class="cd-num" id="cdMins">--</div><div class="cd-unit">분</div></div>
-      <div class="cd-sep">:</div>
-      <div class="cd-block"><div class="cd-num" id="cdSecs">--</div><div class="cd-unit">초</div></div>
-    </div>
-  </div>
+  <!-- 다음 시험 D-day (미션 탭 ⚙️에서 설정) -->
+  <div class="exam-dday" id="examDday"></div>
 
   <!-- 오늘의 미션 -->
   <div class="section-title">🎯 오늘의 미션</div>
@@ -896,6 +926,21 @@
 
 <!-- VIEW: 미션 -->
 <div class="view" id="view-mission">
+
+  <div class="settings-box">
+    <button class="settings-toggle" onclick="toggleSettings()">⚙️ 시험일·공부기간 설정 <span class="wsel-arrow" id="setArrow">▾</span></button>
+    <div class="settings-body" id="settingsBody" style="display:none">
+      <div class="set-note">시험일과 공부 시작일을 정하면, <b>방학 이후 주차가 자동으로 이어지고</b> 시험 대비 주간이 만들어져요. (레이스 화면에 D-day로도 보여요.)</div>
+      <label class="set-row"><span>📝 시험 이름</span><input id="setExamLabel" class="set-in" placeholder="예: 2학기 중간고사"></label>
+      <label class="set-row"><span>📅 시험일</span><input type="date" id="setExamDate" class="set-in"></label>
+      <label class="set-row"><span>📖 공부 시작일</span><input type="date" id="setStudyStart" class="set-in"></label>
+      <div class="set-btns">
+        <button class="set-save" onclick="saveExamSettings()">저장</button>
+        <button class="set-clear" onclick="clearExamSettings()">지우기</button>
+      </div>
+      <div class="set-status" id="setStatus"></div>
+    </div>
+  </div>
 
   <div class="section-title">📅 주차 선택</div>
   <div class="week-select">
@@ -1209,8 +1254,67 @@ const PREVIEW_W4 = [
   { subj: null,   text: '🎯 전체 예습 점검 + 개학(8/17) 준비 — 시간표·준비물·생활리듬' },
 ];
 
-// 전체 주차: 시험대비 2주 + 방학전 + 방학 4주
-const WEEKS = [
+// ───────────────────────────────
+// 설정(시험일·공부기간) + 방학 이후 자동 주차
+// ───────────────────────────────
+function loadSettings() { try { return JSON.parse(localStorage.getItem('marathonSettings') || '{}'); } catch (e) { return {}; } }
+function saveSettingsLS() { localStorage.setItem('marathonSettings', JSON.stringify(SETTINGS)); }
+let SETTINGS = loadSettings();
+
+function ymd(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function parseYmd(s) { return s ? new Date(s + 'T00:00:00') : null; }
+function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+function fmtAny(d) { return (d.getMonth() + 1) + '/' + d.getDate() + ' (' + DOW_KR[d.getDay()] + ')'; }
+function mdKeyAny(d) { return (d.getMonth() + 1) + '_' + d.getDate(); }
+
+const TERM_START = new Date(2026, 7, 18); // 8/18 — 개학(8/17) 다음날부터
+// 계획 시작 연도(2026-06) 기준: 6~12월=2026, 1~5월=2027 로 해석 → 연도 넘김 처리
+const PLAN_BASE_YEAR = 2026;
+
+function makeTermWeek(start, end, n, isPrep, examDate, studyStart, examLabel) {
+  const days = [];
+  let d = new Date(start);
+  while (d <= end) {
+    const k = mdKeyAny(d), academy = [1, 3, 5].includes(d.getDay());
+    const inPrep = studyStart && examDate && d >= studyStart && d <= examDate;
+    const isExam = examDate && ymd(d) === ymd(examDate);
+    const tasks = [
+      { id: `t${k}a`, subj: 'eng', text: '영단어 10개 (📘 영단어 탭)', done: false },
+      { id: `t${k}b`, subj: null, text: '📖 책 읽기', done: false },
+      { id: `t${k}c`, subj: null, text: '🥁 드럼 1시간 연습', done: false },
+    ];
+    if (academy) tasks.push({ id: `t${k}d`, subj: 'eng', text: '🏫 영어 과외', done: false });
+    if (inPrep && !isExam) tasks.push({ id: `t${k}e`, subj: null, text: '📚 시험 대비 공부 (약한 과목 집중)', done: false });
+    const day = { date: fmtAny(d), academy, academyLabel: '🏫 영어과외', tasks };
+    if (isExam) { day.exam = 'X'; day.examText = '📝 ' + (examLabel || '시험'); }
+    days.push(day);
+    d = addDays(d, 1);
+  }
+  const label = examLabel || '시험';
+  const km = fmtAny(start).split(' ')[0] + '~' + fmtAny(end).split(' ')[0];
+  if (isPrep) {
+    return { badge: '📝 시험대비', name: label + ' 대비', km, focus: `📝 ${label} 대비 주간! 매일 약한 과목을 집중 공부해요.`, days };
+  }
+  return { badge: '학기 ' + n + '주', name: '학기 중 루틴', km, focus: '📗 학기 중 루틴 — 영단어 10 · 독서 · 드럼, 월·수·금 과외.', days };
+}
+
+function genTermWeeks() {
+  const examDate = parseYmd(SETTINGS.examDate);
+  const studyStart = parseYmd(SETTINGS.studyStart);
+  const horizon = examDate ? addDays(examDate, 7) : addDays(TERM_START, 7 * 10); // 시험 있으면 시험 다음주까지, 없으면 10주
+  const weeks = [];
+  let cur = new Date(TERM_START), n = 1;
+  while (cur < horizon && n <= 40) {
+    const wkEnd = addDays(cur, 6);
+    const isPrep = studyStart && examDate && wkEnd >= studyStart && cur <= examDate;
+    weeks.push(makeTermWeek(new Date(cur), wkEnd, n, isPrep, examDate, studyStart, SETTINGS.examLabel));
+    cur = addDays(cur, 7); n++;
+  }
+  return weeks;
+}
+
+// 고정 주차: 시험대비 2주 + 방학전 + 방학 4주
+const BASE_WEEKS = [
   { badge: 'WEEK 1', name: '워밍업', km: '0 ~ 21km', days: WEEK1 },
   { badge: 'WEEK 2', name: '본격 레이스', km: '21 ~ 42km', days: WEEK2 },
   { badge: '방학 전', name: '시험 끝·휴식', km: '7/9~7/20', focus: '🎉 시험 끝! 방학 전엔 가볍게 — 컨디션 회복하며 영단어·드럼·독서만 유지해요.', days: genPreVacation() },
@@ -1219,18 +1323,27 @@ const WEEKS = [
   { badge: '방학 3주', name: '2학기 예습', km: '8/4~8/10', focus: '🔭 방학 3주차 — 2학기 예습 시작! 수학(삼각형의 성질)·과학(광합성) 개념 + 국어 작품 미리 읽기.', days: genVacation(8, 4, 8, 10, PREVIEW_W3) },
   { badge: '방학 4주', name: '마무리·개학', km: '8/11~8/16', focus: '🏁 방학 4주차 — 예습 마무리(사각형·광합성 정리) + 개학(8/17) 준비. 생활 리듬 회복!', days: genVacation(8, 11, 8, 16, PREVIEW_W4) },
 ];
-const ALL_DAYS = WEEKS.flatMap(w => w.days);
 
-// 🌙 모든 날짜에 '취침' 항목 추가 — 일찍 자고 일찍 일어나기(기상 체크와 한 쌍)
-ALL_DAYS.forEach(d => {
-  const dd = parseDayDate(d.date);
-  const sk = (dd.getMonth() + 1) + '_' + dd.getDate();
-  d.tasks.push({ id: 'sleep_' + sk, subj: null, text: '🌙 일찍 자기 (밤 11시 전 취침)', done: false });
-});
+let WEEKS = [];
+let ALL_DAYS = [];
+function addBedtimeAll() {
+  WEEKS.forEach(w => w.days.forEach(d => {
+    const dd = parseDayDate(d.date); const sk = mdKeyAny(dd);
+    if (!d.tasks.some(t => t.id === 'sleep_' + sk)) {
+      d.tasks.push({ id: 'sleep_' + sk, subj: null, text: '🌙 일찍 자기 (밤 11시 전 취침)', done: false });
+    }
+  }));
+}
+function rebuildPlan() {
+  WEEKS = BASE_WEEKS.concat(genTermWeeks());
+  addBedtimeAll();
+  ALL_DAYS = WEEKS.flatMap(w => w.days);
+}
+rebuildPlan();
 
 const MOTIVES = [
   "새벽을 깨워 달리는 너라면,\n이 시험도 완주할 수 있어. 🏆",
-  "마라톤에 지름길이 없듯,\n공부도 한 걸음씩이야. <span style='display:inline-block;transform:scaleX(-1)'>🏃</span>",
+  "마라톤에 지름길이 없듯,\n공부도 한 걸음씩이야. 🏃",
   "힘들 때 포기하지 않는 게\n마라톤이고, 공부야. 🔥",
   "오늘 완료한 미션이\n내일의 페이스를 만들어. ⚡",
   "결승선은 7월 7일.\n지금 네가 있는 곳이 어디든, 달리고 있잖아! 🏁",
@@ -1239,7 +1352,7 @@ const MOTIVES = [
   "완벽하지 않아도 괜찮아.\n끝까지 가는 게 이기는 거야. 🥇",
   "오늘의 5분이 모여\n시험장의 자신감이 된다. ✨",
   "달리다 보면 오르막도 끝나.\n이 단원도 곧 끝나. ⛰️",
-  "넌 이미 출발선을 넘었어.\n남은 건 완주뿐! <span style='display:inline-block;transform:scaleX(-1)'>🏃</span>",
+  "넌 이미 출발선을 넘었어.\n남은 건 완주뿐! 🏃‍♂️",
 ];
 
 // ───────────────────────────────
@@ -1352,7 +1465,7 @@ function mergeQuizLog(a, b) {
 async function pushRemoteNow() {
   if (!isSynced()) return;
   await db.collection(SYNC_COLLECTION).doc(currentUser).set(
-    { checked: checked, quizLog: quizLog, wake: wakeLog, updatedAt: Date.now() },
+    { checked: checked, quizLog: quizLog, wake: wakeLog, settings: SETTINGS, updatedAt: Date.now() },
     { merge: true }
   );
 }
@@ -1376,12 +1489,16 @@ async function pullRemote() {
       checked = Object.assign({}, checked, data.checked || {});
       quizLog = mergeQuizLog(quizLog, data.quizLog || {});
       wakeLog = Object.assign({}, wakeLog, data.wake || {});
+      if (data.settings && (data.settings.examDate || data.settings.studyStart || data.settings.examLabel)) {
+        SETTINGS = data.settings; saveSettingsLS(); rebuildPlan();
+      }
       localStorage.setItem('marathonChecked', JSON.stringify(checked));
       saveQuizLog();
       saveWakeLog();
     }
     await pushRemoteNow(); // 병합 결과를 다시 올려 양쪽 일치
-    updateStats(); renderMissions(); renderConcepts(); renderTodayFocus(); renderRecord(); renderWake(); renderRaceTodayMission();
+    currentWeek = initialWeekIndex();
+    renderWeekList(); updateStats(); renderMissions(); renderConcepts(); renderTodayFocus(); renderRecord(); renderWake(); renderRaceTodayMission(); updateExamBadge();
     setSyncStatus('✅ 동기화됨');
   } catch (e) {
     console.warn(e);
@@ -1443,26 +1560,27 @@ function renderSyncUI() {
 // ───────────────────────────────
 // COUNTDOWN
 // ───────────────────────────────
-function updateCountdown() {
-  const now = new Date();
-  const diff = EXAM_DATE - now;
-  if (diff <= 0) {
-    document.getElementById('cdDays').textContent = '0';
-    document.getElementById('cdHours').textContent = '00';
-    document.getElementById('cdMins').textContent = '00';
-    document.getElementById('cdSecs').textContent = '00';
-    document.getElementById('examBadge').textContent = 'D-Day!';
+function updateCountdown() { updateExamBadge(); }
+function updateExamBadge() {
+  const badge = document.getElementById('examBadge');
+  const card = document.getElementById('examDday');
+  const examDate = parseYmd(SETTINGS.examDate);
+  const label = SETTINGS.examLabel || '시험';
+  if (!examDate) {
+    if (badge) badge.textContent = '시험 설정';
+    if (card) card.innerHTML = '<div class="exam-dday-inner none">📅 다음 시험이 아직 없어요 — <b>미션 탭 ⚙️</b>에서 시험일을 설정해요.</div>';
     return;
   }
-  const d = Math.floor(diff / 86400000);
-  const h = Math.floor((diff % 86400000) / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  const s = Math.floor((diff % 60000) / 1000);
-  document.getElementById('cdDays').textContent = d;
-  document.getElementById('cdHours').textContent = String(h).padStart(2,'0');
-  document.getElementById('cdMins').textContent = String(m).padStart(2,'0');
-  document.getElementById('cdSecs').textContent = String(s).padStart(2,'0');
-  document.getElementById('examBadge').textContent = `D-${d}`;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const dd = Math.round((examDate - today) / 86400000);
+  const dtxt = dd > 0 ? ('D-' + dd) : (dd === 0 ? 'D-Day!' : '시험 종료');
+  if (badge) badge.textContent = dtxt;
+  if (card) {
+    card.innerHTML = `<div class="exam-dday-inner">
+      <div class="edd-big">${dtxt}</div>
+      <div class="edd-meta"><b>${label}</b><br>${fmtAny(examDate).replace(/\s/g,' ')}</div>
+    </div>`;
+  }
 }
 
 // ───────────────────────────────
@@ -1513,9 +1631,12 @@ const subjMap = {
   tech: { cls: 'subj-tech', label: '기가' },
 };
 
+// 학년도 기준연도로 연도 넘김 처리(6~12월=기준연도, 1~5월=다음해)
 function parseDayDate(dateStr) {
   const m = dateStr.match(/(\d+)\/(\d+)/);
-  return new Date(2026, parseInt(m[1],10)-1, parseInt(m[2],10));
+  const mo = parseInt(m[1], 10);
+  const yr = mo >= 6 ? PLAN_BASE_YEAR : PLAN_BASE_YEAR + 1;
+  return new Date(yr, mo - 1, parseInt(m[2], 10));
 }
 function dayPhase(dateStr) {
   const d = parseDayDate(dateStr);
@@ -1531,7 +1652,7 @@ function dayCardHTML(day) {
   let statusCls, statusText;
   if (day.exam) {
     statusCls = phase === 'past' ? 'done' : 'today';
-    statusText = day.exam === 'D1' ? '📝 1차 시험' : '📝 2차 시험';
+    statusText = day.examText || (day.exam === 'D1' ? '📝 1차 시험' : '📝 2차 시험');
   } else if (phase === 'today') {
     statusCls = 'today'; statusText = '🔴 오늘';
   } else if (phase === 'past') {
@@ -1636,6 +1757,58 @@ function selectWeek(w) {
   const arrow = document.querySelector('.wsel-arrow');
   if (arrow) arrow.style.transform = '';
 }
+// 시험 설정 UI
+function toggleSettings() {
+  const body = document.getElementById('settingsBody');
+  const arrow = document.getElementById('setArrow');
+  if (!body) return;
+  const show = body.style.display === 'none';
+  body.style.display = show ? 'block' : 'none';
+  if (arrow) arrow.style.transform = show ? 'rotate(180deg)' : '';
+  if (show) populateSettingsInputs();
+}
+function populateSettingsInputs() {
+  const el = id => document.getElementById(id);
+  if (el('setExamLabel')) el('setExamLabel').value = SETTINGS.examLabel || '';
+  if (el('setExamDate')) el('setExamDate').value = SETTINGS.examDate || '';
+  if (el('setStudyStart')) el('setStudyStart').value = SETTINGS.studyStart || '';
+}
+function refreshAfterPlanChange() {
+  currentWeek = initialWeekIndex();
+  renderWeekList();
+  renderMissions();
+  renderRaceTodayMission();
+  updateStats();
+  updateExamBadge();
+}
+function saveExamSettings() {
+  const el = id => document.getElementById(id);
+  const examDate = el('setExamDate') ? el('setExamDate').value : '';
+  const studyStart = el('setStudyStart') ? el('setStudyStart').value : '';
+  const examLabel = el('setExamLabel') ? el('setExamLabel').value.trim() : '';
+  if (studyStart && examDate && studyStart > examDate) {
+    if (el('setStatus')) el('setStatus').textContent = '⚠️ 공부 시작일이 시험일보다 늦어요. 다시 확인해 주세요.';
+    return;
+  }
+  SETTINGS = { examLabel, examDate: examDate || null, studyStart: studyStart || null };
+  saveSettingsLS();
+  schedulePush();
+  rebuildPlan();
+  refreshAfterPlanChange();
+  const termCount = WEEKS.length - BASE_WEEKS.length;
+  if (el('setStatus')) el('setStatus').textContent = '✅ 저장됐어요! 방학 이후 ' + termCount + '개 주차가 만들어졌어요.' + (examDate ? ' 레이스 화면에 D-day가 떠요.' : '');
+}
+function clearExamSettings() {
+  SETTINGS = {};
+  saveSettingsLS();
+  schedulePush();
+  rebuildPlan();
+  refreshAfterPlanChange();
+  populateSettingsInputs();
+  const st = document.getElementById('setStatus');
+  if (st) st.textContent = '설정을 지웠어요. (기본 주차로 돌아감)';
+}
+
 function initialWeekIndex() {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   for (let i = 0; i < WEEKS.length; i++) {
@@ -3536,8 +3709,7 @@ function switchTab(name, btn) {
 // ───────────────────────────────
 // INIT
 // ───────────────────────────────
-updateCountdown();
-updateTrack();
+updateExamBadge();
 updateStats();
 updateMotive();
 currentWeek = initialWeekIndex();
@@ -3550,6 +3722,7 @@ renderRecord();
 renderVocab();
 renderWake();
 renderChat();
+populateSettingsInputs();
 (function () {
   const ci = document.getElementById('chatInput');
   if (ci) ci.addEventListener('keydown', function (e) {
@@ -3559,8 +3732,7 @@ renderChat();
 initFirebase();
 renderSyncUI();
 if (isSynced()) pullRemote();
-setInterval(updateCountdown, 1000);
-setInterval(updateTrack, 60000);
+setInterval(updateExamBadge, 60000);
 </script>
 </body>
 </html>
